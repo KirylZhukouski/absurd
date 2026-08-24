@@ -1,0 +1,1933 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broetry Foundry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   CALDERA × HYPERSTUDIO
+   Hyperstudio is the chassis: obsidian, 1px Graphite hairlines,
+   weight-400 voice, 8px architectural radii, no shadows ever.
+   Caldera is what's molten inside it: Ember heat, halftone dots,
+   800px pill controls, ultrabold compressed display type.
+
+   The console is ALWAYS the machine — Hyperstudio dark in both
+   themes, so Pulse Green and Compass Gold only ever sit on
+   Carbon, exactly as that system requires. What the theme
+   switches is the room the machine stands in and the paper it
+   prints on: Caldera limestone, or Hyperstudio obsidian.
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  /* ── the machine: identical in both themes ── */
+  --console:#101010;        /* Hyperstudio Obsidian  */
+  --console-2:#080808;      /* Hyperstudio Carbon    */
+  --console-line:#212121;   /* Hyperstudio Graphite  */
+  --console-line-2:#474747; /* Hyperstudio Iron      */
+  --console-ink:#f3f3f3;    /* Hyperstudio Chalk     */
+  --console-ink-2:#9c9c9c;  /* Hyperstudio Smoke     */
+  --gold:#6f6759;           /* Hyperstudio Compass Gold — icon strokes only */
+  --pulse:#98ff38;          /* Hyperstudio Pulse Green — live status only   */
+
+  /* ── chromatic accents: Caldera's constrained three ── */
+  --ember:#fc5000;
+  --ember-on:#070607;       /* text that sits on an Ember fill */
+  --sulfur:#f5f28e;
+  --violet:#524ae9;         /* reserved: the halftone gradient, once */
+
+  /* ── the room (light = Caldera) ── */
+  --canvas:#e2e2df;         /* Pumice   */
+  --tray:#f7f6f2;           /* Limestone */
+  --card:#ffffff;           /* Chalk — the post is the one pristine surface */
+  --hairline:#c7c6c1;
+  --hairline-soft:#d9d8d4;
+  --ink:#070607;            /* Caldera Obsidian */
+  --ink-2:#65625d;          /* derived warm muted — Smoke fails on Limestone */
+  --ember-text:#b83800;     /* derived — Ember as small text needs 4.5:1 on light */
+  --dots:rgba(252,80,0,.34);
+
+  /* ── shape: Hyperstudio radii for structure, Caldera for controls ── */
+  --r-card:8px;
+  --r-tag:4px;
+  --r-pill:800px;
+  --r-input:100px;
+
+  --f-display:"Anton","Haettenschweiler","Arial Narrow",sans-serif;
+  --f-body:"DM Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --canvas:#101010;
+    --tray:#080808;
+    --card:#171717;
+    --hairline:#212121;
+    --hairline-soft:#1a1a1a;
+    --ink:#f3f3f3;
+    --ink-2:#9c9c9c;
+    --ember-text:#fc5000;
+    --dots:rgba(252,80,0,.30);
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#101010;
+  --tray:#080808;
+  --card:#171717;
+  --hairline:#212121;
+  --hairline-soft:#1a1a1a;
+  --ink:#f3f3f3;
+  --ink-2:#9c9c9c;
+  --ember-text:#fc5000;
+  --dots:rgba(252,80,0,.30);
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--canvas);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-weight:500;              /* Caldera: Medium only, never Regular */
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit;}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px;}
+
+/* Caldera's signature motif: a halftone dot field that fades.
+   Used as the masthead band and the output tray ground. */
+.halftone{
+  background-image:radial-gradient(var(--dots) 1.4px, transparent 1.5px);
+  background-size:10px 10px;
+}
+
+/* ── MASTHEAD ───────────────────────────────────────────── */
+.masthead{
+  background:var(--console);
+  color:var(--console-ink);
+  border-bottom:1px solid var(--console-line);
+}
+.hazard{
+  height:56px;
+  background-image:
+    radial-gradient(rgba(252,80,0,.85) 1.6px, transparent 1.7px),
+    linear-gradient(100deg, var(--violet) 0%, #8a3a7a 42%, var(--ember) 100%);
+  background-size:9px 9px, 100% 100%;
+  -webkit-mask-image:linear-gradient(to bottom, #000 0%, rgba(0,0,0,.35) 62%, transparent 100%);
+  mask-image:linear-gradient(to bottom, #000 0%, rgba(0,0,0,.35) 62%, transparent 100%);
+}
+.masthead-in{
+  max-width:1280px;margin:0 auto;
+  padding:20px 24px 26px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;
+}
+.wordmark{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0;}
+.wordmark h1{
+  font-family:var(--f-display);
+  font-weight:400;
+  font-size:clamp(40px,6.4vw,72px);
+  line-height:.94;
+  letter-spacing:.02em;      /* Caldera: positive tracking, never negative */
+  margin:0;
+  text-transform:uppercase;
+  color:var(--console-ink);
+}
+.wordmark h1 em{font-style:normal;color:var(--ember);}
+.plate{
+  font-family:var(--f-mono);font-weight:400;
+  font-size:11px;letter-spacing:-.022em;text-transform:uppercase;
+  color:var(--console-ink-2);
+  border:1px solid var(--console-line);
+  border-radius:var(--r-pill);
+  padding:5px 14px;
+}
+.tagline{
+  font-family:var(--f-mono);font-weight:400;
+  font-size:12px;line-height:1.6;letter-spacing:-.022em;
+  color:var(--console-ink-2);
+  max-width:42ch;text-align:right;margin:0;
+}
+@media (max-width:760px){ .tagline{text-align:left;} }
+</style>
+
+<style>
+/* ── SHELL ──────────────────────────────────────────────── */
+.floor{
+  max-width:1280px;margin:0 auto;padding:24px;
+  display:grid;grid-template-columns:minmax(320px,392px) 1fr;
+  gap:24px;align-items:start;
+}
+@media (max-width:1000px){ .floor{grid-template-columns:1fr;padding:16px;gap:16px;} }
+
+/* ── CONTROL CONSOLE — Hyperstudio, in both themes ──────── */
+.console{
+  background:var(--console);
+  border:1px solid var(--console-line);
+  border-radius:var(--r-card);
+  color:var(--console-ink);
+  position:sticky;top:24px;overflow:hidden;
+}
+@media (max-width:1000px){ .console{position:static;} }
+.console-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 18px;border-bottom:1px solid var(--console-line);
+  background:var(--console-2);
+}
+.console-head span{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
+  text-transform:uppercase;color:var(--console-ink-2);
+}
+.leds{display:flex;gap:6px;}
+.led{width:7px;height:7px;border-radius:99px;background:var(--console-line-2);}
+.led.on{background:var(--pulse);}
+.led.hot{background:var(--ember);}
+
+.rack{padding:20px 18px 22px;display:flex;flex-direction:column;gap:20px;}
+.bay{display:flex;flex-direction:column;gap:9px;}
+.bay-label{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
+  text-transform:uppercase;color:var(--console-ink-2);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.bay-label b{font-weight:400;color:var(--ember);}
+
+/* Caldera input: pill, 100px radius */
+.field{
+  width:100%;background:transparent;color:var(--console-ink);
+  border:1px solid var(--console-line-2);border-radius:var(--r-input);
+  padding:11px 18px;font-size:15px;font-family:var(--f-body);font-weight:500;
+}
+.field::placeholder{color:var(--console-ink-2);}
+.field:focus{outline:1.5px solid var(--ember);outline-offset:-1px;border-color:transparent;}
+
+.with-dice{display:flex;gap:8px;}
+.with-dice .field{flex:1;min-width:0;}
+/* Caldera primary CTA: Ember fill, Obsidian text, full pill */
+.dice{
+  background:var(--ember);color:var(--ember-on);border:none;
+  border-radius:var(--r-pill);cursor:pointer;padding:0 20px;
+  font-family:var(--f-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:-.022em;
+  transition:filter .12s ease;flex:none;
+}
+.dice:hover{filter:brightness(1.12);}
+
+/* ── DIAL ───────────────────────────────────────────────── */
+.dial-readout{
+  font-family:var(--f-display);font-weight:400;
+  font-size:34px;line-height:1;text-transform:uppercase;
+  color:var(--ember);letter-spacing:.02em;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:24px;
+  background:transparent;cursor:pointer;margin:0;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:1px;background:var(--console-line-2);
+}
+input[type=range]::-moz-range-track{height:1px;background:var(--console-line-2);}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:18px;height:18px;margin-top:-8.5px;border-radius:99px;
+  background:var(--ember);border:none;
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:99px;background:var(--ember);border:none;
+}
+.ticks{
+  display:flex;justify-content:space-between;
+  font-family:var(--f-mono);font-size:10px;color:var(--console-ink-2);
+  letter-spacing:-.022em;
+}
+
+/* ── TOGGLES — Caldera pills inside a Hyperstudio grid ──── */
+.switches{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media (max-width:430px){ .switches{grid-template-columns:1fr;} }
+.sw{
+  display:flex;align-items:center;gap:10px;
+  background:transparent;border:1px solid var(--console-line);
+  border-radius:var(--r-pill);padding:9px 13px;cursor:pointer;
+  font-size:12.5px;line-height:1.25;color:var(--console-ink-2);white-space:nowrap;
+  transition:border-color .12s ease,color .12s ease;
+  user-select:none;
+}
+.sw.wide{grid-column:1/-1;}
+.sw:hover{border-color:var(--console-line-2);}
+.sw input{
+  position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+  border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;
+}
+.sw .knob{
+  flex:none;width:8px;height:8px;border-radius:99px;
+  background:var(--console-line-2);transition:background .14s ease;
+}
+.sw input:checked ~ .knob{background:var(--ember);}
+.sw:has(input:checked){color:var(--console-ink);border-color:var(--console-line-2);}
+.sw input:focus-visible ~ .knob{outline:2px solid var(--ember);outline-offset:3px;}
+
+/* ── GAUGE ──────────────────────────────────────────────── */
+.gauge-bay{
+  display:flex;align-items:center;gap:16px;
+  border:1px solid var(--console-line);border-radius:var(--r-card);
+  background:var(--console-2);padding:16px;
+}
+.gauge{flex:none;width:104px;height:60px;}
+.gauge .needle{
+  transform-origin:52px 52px;
+  transition:transform .55s cubic-bezier(.34,1.4,.5,1);
+}
+.gauge-txt{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.gauge-txt .n{
+  font-family:var(--f-display);font-size:38px;line-height:.9;
+  color:var(--ember);letter-spacing:.02em;font-variant-numeric:tabular-nums;
+}
+.gauge-txt .u{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:-.022em;
+  text-transform:uppercase;color:var(--console-ink-2);
+}
+.gauge-txt .d{font-size:12.5px;color:var(--console-ink-2);line-height:1.35;}
+
+/* ── LEVER — Caldera's most dominant surface ────────────── */
+.lever{
+  width:100%;border:none;cursor:pointer;
+  background:var(--ember);color:var(--ember-on);
+  border-radius:var(--r-pill);
+  font-family:var(--f-display);font-weight:400;
+  font-size:32px;line-height:1;text-transform:uppercase;letter-spacing:.02em;
+  padding:20px 16px 17px;
+  transition:filter .12s ease,transform .08s ease;
+}
+.lever:hover{filter:brightness(1.1);}
+.lever:active{transform:translateY(1px);}
+.lever small{
+  display:block;font-family:var(--f-mono);font-size:10px;font-weight:400;
+  letter-spacing:-.022em;margin-top:7px;opacity:.7;text-transform:uppercase;
+}
+.mini-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+/* Hyperstudio ghost outline button */
+.mini{
+  background:transparent;border:1px solid var(--console-line-2);
+  border-radius:var(--r-pill);
+  color:var(--console-ink);cursor:pointer;padding:11px 8px;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:-.022em;
+  text-transform:uppercase;transition:.12s ease;
+}
+.mini:hover{border-color:var(--ember);color:var(--ember);}
+</style>
+
+<style>
+/* ── OUTPUT STAGE ───────────────────────────────────────── */
+.stage{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.stage-bar{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+  border-bottom:1px solid var(--hairline);padding-bottom:12px;
+}
+.stage-bar h2{
+  font-family:var(--f-display);font-weight:400;font-size:30px;
+  text-transform:uppercase;letter-spacing:.02em;margin:0;color:var(--ink);
+}
+.meters{
+  display:flex;gap:0;font-family:var(--f-mono);font-size:11px;
+  letter-spacing:-.022em;text-transform:uppercase;color:var(--ink-2);flex-wrap:wrap;
+}
+/* Caldera's dotted divider, as the meter separator */
+.meters span{padding:0 14px;border-right:1.5px dotted var(--hairline);}
+.meters span:last-child{border-right:0;padding-right:0;}
+.meters span:first-child{padding-left:0;}
+.meters b{color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums;}
+.meters .over{color:var(--ember-text);}
+
+.tray{
+  background-color:var(--tray);
+  border:1px solid var(--hairline);
+  border-radius:var(--r-card);
+  padding:clamp(18px,3.4vw,44px);
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  position:relative;
+}
+.tray::before{
+  content:"WORKBENCH";
+  position:absolute;top:14px;left:18px;
+  font-family:var(--f-mono);font-size:10px;letter-spacing:-.022em;
+  color:var(--ink-2);opacity:.6;
+}
+.unit-stamp{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:-.022em;
+  text-transform:uppercase;color:var(--ink-2);
+  display:flex;flex-wrap:wrap;justify-content:center;margin:0;
+}
+.unit-stamp span{padding:0 12px;border-right:1.5px dotted var(--hairline);}
+.unit-stamp span:last-child{border-right:0;}
+.unit-stamp b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;}
+
+/* ── THE POST ───────────────────────────────────────────── */
+.post{
+  width:100%;max-width:620px;background:var(--card);color:var(--ink);
+  border:1px solid var(--hairline);border-radius:var(--r-card);
+  overflow:hidden;                     /* no shadow: both systems forbid it */
+}
+.post.stamp{animation:stamp .34s cubic-bezier(.2,.9,.3,1.15);}
+@keyframes stamp{
+  0%{transform:scale(.97) translateY(-5px);opacity:.3;}
+  100%{transform:scale(1);opacity:1;}
+}
+@media (prefers-reduced-motion:reduce){
+  .post.stamp{animation:none;}
+  .gauge .needle{transition:none;}
+}
+
+.post-top{display:flex;gap:12px;padding:18px 18px 4px;align-items:flex-start;}
+.avatar{
+  flex:none;width:48px;height:48px;border-radius:99px;
+  display:grid;place-items:center;
+  font-family:var(--f-display);font-weight:400;font-size:20px;
+  letter-spacing:.02em;
+}
+.who{min-width:0;flex:1;}
+.who .nm{
+  font-weight:700;font-size:15px;line-height:1.25;color:var(--ink);
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+}
+/* Caldera Category Tag Badge — Sulfur, pill, Obsidian text */
+.badge{
+  font-family:var(--f-mono);font-size:9.5px;font-weight:400;
+  letter-spacing:-.022em;text-transform:uppercase;
+  background:var(--sulfur);color:#070607;padding:2px 9px;border-radius:var(--r-pill);
+}
+.who .hd{font-size:12.5px;color:var(--ink-2);line-height:1.35;margin-top:2px;}
+.who .mt{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:-.022em;
+  color:var(--ink-2);margin-top:4px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.follow{
+  flex:none;align-self:flex-start;background:transparent;cursor:pointer;
+  border:1px solid var(--hairline);border-radius:var(--r-pill);
+  color:var(--ink);font-family:var(--f-mono);font-size:10.5px;
+  letter-spacing:-.022em;text-transform:uppercase;padding:6px 14px;
+}
+.follow:hover{border-color:var(--ember);color:var(--ember-text);}
+
+.body{
+  padding:12px 18px 14px;font-size:14.5px;line-height:1.55;
+  color:var(--ink);white-space:pre-wrap;word-wrap:break-word;font-weight:500;
+}
+/* hashtags become Caldera Sulfur tag pills */
+.body .tag{
+  background:var(--sulfur);color:#070607;
+  border-radius:var(--r-pill);padding:1px 8px;
+  font-size:12.5px;white-space:nowrap;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone;
+}
+.seemore{
+  display:inline;background:none;border:none;padding:0;cursor:pointer;
+  color:var(--ink-2);font-size:14.5px;font-family:inherit;font-weight:500;
+}
+.seemore:hover{color:var(--ember-text);}
+.body.clipped{
+  display:-webkit-box;-webkit-line-clamp:16;-webkit-box-orient:vertical;
+  overflow:hidden;padding-bottom:0;
+}
+.clipwrap{position:relative;}
+.clipwrap .more-row{padding:2px 18px 12px;}
+
+.stats{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 18px;font-family:var(--f-mono);font-size:11px;
+  letter-spacing:-.022em;color:var(--ink-2);
+  border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);
+}
+.reacts{display:flex;align-items:center;gap:5px;}
+.react{width:6px;height:6px;border-radius:99px;}
+.reacts .count{margin-left:5px;font-variant-numeric:tabular-nums;color:var(--ink);}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);padding:4px 6px;}
+/* Hyperstudio outlined icon set: 1.5px stroke, no fill, Compass Gold */
+.act{
+  background:none;border:none;cursor:pointer;padding:10px 2px;
+  border-radius:var(--r-pill);
+  color:var(--ink-2);font-family:var(--f-mono);font-size:11px;
+  letter-spacing:-.022em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.act:hover{color:var(--ink);}
+.act svg{
+  width:16px;height:16px;flex:none;
+  fill:none;stroke:var(--gold);stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.act:hover svg{stroke:var(--ember);}
+</style>
+
+<style>
+/* ── THE REVENUE SCREENSHOT ─────────────────────────────────
+   A prop: a payments dashboard, attached to the post the way
+   this genre always attaches one. Single series, so no legend —
+   the label names it. Delta never reads by colour alone: it
+   always carries an arrow glyph and a signed number, and each
+   theme renders it in its own system's badge component. */
+:root{
+  --shot-bg:#fbfaf7;
+  --shot-line:#e7e5df;
+  --shot-grid:#eeece6;
+  --delta-bg:var(--sulfur);
+  --delta-ink:#070607;
+  --delta-line:transparent;
+  --delta-dot:#070607;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --shot-bg:#0d0d0d;
+    --shot-line:#212121;
+    --shot-grid:#1b1b1b;
+    --delta-bg:#0a0a0a;
+    --delta-ink:#f3f3f3;
+    --delta-line:#212121;
+    --delta-dot:#98ff38;
+  }
+}
+:root[data-theme="dark"]{
+  --shot-bg:#0d0d0d;
+  --shot-line:#212121;
+  --shot-grid:#1b1b1b;
+  --delta-bg:#0a0a0a;
+  --delta-ink:#f3f3f3;
+  --delta-line:#212121;
+  --delta-dot:#98ff38;
+}
+
+.shot{
+  margin:0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);
+  background:var(--shot-bg);
+}
+.shot-chrome{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 14px;border-bottom:1px solid var(--shot-line);
+}
+.shot-chrome i{width:7px;height:7px;border-radius:99px;background:var(--shot-line);flex:none;}
+.shot-chrome span{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:-.022em;
+  color:var(--ink-2);margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.shot-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  padding:16px 18px 8px;flex-wrap:wrap;
+}
+.shot-label{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:-.022em;
+  text-transform:uppercase;color:var(--ink-2);margin:0 0 6px;
+}
+.shot-num{
+  font-family:var(--f-display);font-weight:400;
+  font-size:clamp(38px,7.6vw,50px);line-height:.92;letter-spacing:.02em;
+  color:var(--ink);margin:0;font-variant-numeric:tabular-nums;
+}
+.shot-delta{
+  display:inline-flex;align-items:center;gap:7px;margin:10px 0 0;
+  background:var(--delta-bg);color:var(--delta-ink);
+  border:1px solid var(--delta-line);border-radius:var(--r-pill);
+  padding:4px 12px;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
+  font-variant-numeric:tabular-nums;
+}
+.shot-delta i{width:6px;height:6px;border-radius:99px;background:var(--delta-dot);flex:none;}
+.shot-delta em{font-style:normal;opacity:.7;}
+.shot-range{display:flex;gap:6px;flex:none;}
+.shot-range span,.shot-range b{
+  font-family:var(--f-mono);font-size:10px;font-weight:400;letter-spacing:-.022em;
+  border:1px solid var(--shot-line);border-radius:var(--r-pill);
+  padding:4px 11px;color:var(--ink-2);
+}
+.shot-range b{background:var(--ember);border-color:var(--ember);color:var(--ember-on);}
+.shot-plot{position:relative;padding:4px 8px 0;}
+.shot-plot svg{display:block;width:100%;height:auto;overflow:visible;}
+.shot-x{
+  display:flex;justify-content:space-between;
+  padding:6px 18px 0;
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:-.022em;color:var(--ink-2);
+}
+.shot-foot{
+  display:flex;flex-wrap:wrap;gap:0;
+  border-top:1px solid var(--shot-line);margin-top:12px;padding:11px 18px;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:-.022em;
+  text-transform:uppercase;color:var(--ink-2);
+}
+.shot-foot span{padding:0 14px;border-right:1.5px dotted var(--shot-line);}
+.shot-foot span:first-child{padding-left:0;}
+.shot-foot span:last-child{border-right:0;}
+.shot-foot b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;}
+
+/* crosshair + tooltip: an HTML chart is interactive by default */
+.tip{
+  position:absolute;pointer-events:none;opacity:0;transition:opacity .1s ease;
+  background:var(--console);color:var(--console-ink);
+  border:1px solid var(--console-line);border-radius:var(--r-tag);
+  padding:6px 10px;font-family:var(--f-mono);font-size:10.5px;
+  letter-spacing:-.022em;white-space:nowrap;z-index:3;
+  transform:translate(-50%,-115%);
+}
+.tip b{color:var(--ember);font-weight:400;}
+.tip.on{opacity:1;}
+
+/* ── TOOLS, TICKER, MODAL, FOOT ─────────────────────────── */
+.tools{display:flex;gap:10px;flex-wrap:wrap;}
+.tool{
+  background:transparent;border:1px solid var(--hairline);color:var(--ink);
+  border-radius:var(--r-pill);cursor:pointer;padding:11px 22px;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
+  text-transform:uppercase;transition:.12s ease;
+}
+.tool:hover{border-color:var(--ink);}
+.tool.primary{background:var(--ember);color:var(--ember-on);border-color:var(--ember);}
+.tool.primary:hover{filter:brightness(1.1);border-color:var(--ember);}
+.tool[data-ok="1"]{border-color:var(--ember);color:var(--ember-text);}
+
+.ticker{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
+  color:var(--ink-2);border-top:1px solid var(--hairline);padding-top:14px;line-height:1.65;
+}
+.ticker b{color:var(--ember-text);font-weight:400;}
+
+dialog{
+  border:1px solid var(--console-line);background:var(--console);color:var(--console-ink);
+  border-radius:var(--r-card);padding:0;max-width:440px;width:calc(100% - 32px);
+}
+dialog::backdrop{background:rgba(8,8,8,.8);}
+.mo{padding:28px;}
+.mo h3{
+  font-family:var(--f-display);font-weight:400;font-size:44px;line-height:.95;
+  text-transform:uppercase;letter-spacing:.02em;margin:0 0 12px;color:var(--ember);
+}
+.mo p{margin:0 0 8px;font-size:15px;color:var(--console-ink);line-height:1.55;}
+.mo p.fine{
+  font-family:var(--f-mono);font-size:11px;color:var(--console-ink-2);
+  letter-spacing:-.022em;margin-top:16px;line-height:1.65;
+}
+.mo button{
+  margin-top:20px;width:100%;background:var(--ember);color:var(--ember-on);
+  border:none;border-radius:var(--r-pill);cursor:pointer;padding:15px;
+  font-family:var(--f-display);font-weight:400;font-size:22px;
+  text-transform:uppercase;letter-spacing:.02em;
+}
+.foot{
+  max-width:1280px;margin:0 auto;padding:20px 24px 56px;
+}
+.foot span{
+  display:block;max-width:96ch;
+  border-top:1px solid var(--hairline);padding-top:18px;
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:-.022em;
+  color:var(--ink-2);line-height:1.75;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+</style>
+
+<header class="masthead">
+  <div class="hazard"></div>
+  <div class="masthead-in">
+    <div class="wordmark">
+      <h1>Broetry<br><em>Foundry</em></h1>
+      <span class="plate">Unit 04 · Thought-Leadership Extrusion</span>
+    </div>
+    <p class="tagline">
+      Industrial-grade manufacture of the post that begins
+      "I just built ___ without knowing how to code."
+      No engineers were consulted. None were available.
+    </p>
+  </div>
+</header>
+
+<main class="floor">
+
+  <section class="console" aria-label="Post controls">
+    <div class="console-head">
+      <span>Control Console</span>
+      <div class="leds" aria-hidden="true">
+        <i class="led on"></i><i class="led on"></i><i class="led" id="ledHot"></i>
+      </div>
+    </div>
+
+    <div class="rack">
+      <div class="bay">
+        <label class="bay-label" for="fSaas">The SaaS you are shilling <b>required</b></label>
+        <div class="with-dice">
+          <input class="field" id="fSaas" type="text" placeholder="Zaply" value="Zaply" autocomplete="off">
+          <button class="dice" id="rollSaas" title="Invent a new one">Roll</button>
+        </div>
+      </div>
+
+      <div class="bay">
+        <label class="bay-label" for="fThing">What you allegedly built</label>
+        <div class="with-dice">
+          <input class="field" id="fThing" type="text" placeholder="leave blank for a surprise" autocomplete="off">
+          <button class="dice" id="rollThing" title="Invent a new one">Roll</button>
+        </div>
+      </div>
+
+      <div class="bay">
+        <label class="bay-label" for="fName">Your name on the post</label>
+        <div class="with-dice">
+          <input class="field" id="fName" type="text" placeholder="Chad Vandergrift" autocomplete="off">
+          <button class="dice" id="rollName" title="Invent a new one">Roll</button>
+        </div>
+      </div>
+
+      <div class="bay">
+        <div class="bay-label"><span>Absurdity dial</span></div>
+        <div class="dial-readout" id="dialName">Fully Unhinged</div>
+        <input type="range" id="dial" min="1" max="5" step="1" value="3"
+               aria-label="Absurdity level" aria-describedby="dialName">
+        <div class="ticks" aria-hidden="true">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+        </div>
+      </div>
+
+      <div class="bay">
+        <div class="bay-label"><span>Optional afflictions</span></div>
+        <div class="switches">
+          <label class="sw wide" for="tChart"><input type="checkbox" id="tChart" checked><i class="knob"></i>Revenue screenshot</label>
+          <label class="sw" for="tMoney"><input type="checkbox" id="tMoney" checked><i class="knob"></i>Unverifiable revenue</label>
+          <label class="sw" for="tBroetry"><input type="checkbox" id="tBroetry" checked><i class="knob"></i>Broetry line breaks</label>
+          <label class="sw" for="tEmoji"><input type="checkbox" id="tEmoji" checked><i class="knob"></i>Emoji bullets</label>
+          <label class="sw" for="tCry"><input type="checkbox" id="tCry" checked><i class="knob"></i>Unprompted crying</label>
+          <label class="sw" for="tHumble"><input type="checkbox" id="tHumble" checked><i class="knob"></i>Aggressive humility</label>
+          <label class="sw" for="tTags"><input type="checkbox" id="tTags" checked><i class="knob"></i>Hashtag avalanche</label>
+          <label class="sw" for="tKid"><input type="checkbox" id="tKid"><i class="knob"></i>Wise child anecdote</label>
+          <label class="sw" for="tUber"><input type="checkbox" id="tUber"><i class="knob"></i>Uber driver wisdom</label>
+        </div>
+      </div>
+
+      <div class="gauge-bay">
+        <svg class="gauge" viewBox="0 0 104 60" aria-hidden="true">
+          <path d="M10 52 A42 42 0 0 1 94 52" fill="none" stroke="var(--console-line)" stroke-width="7"/>
+          <path d="M73.2 15.6 A42 42 0 0 1 94 52" fill="none" stroke="var(--ember)" stroke-width="7"/>
+          <g class="needle" id="needle">
+            <line x1="52" y1="52" x2="52" y2="17" stroke="var(--console-ink)" stroke-width="2"/>
+            <circle cx="52" cy="52" r="4" fill="var(--ember)"/>
+          </g>
+        </svg>
+        <div class="gauge-txt">
+          <div class="n" id="psi">0</div>
+          <div class="u">Cringe PSI</div>
+          <div class="d" id="psiWord">Awaiting first pull.</div>
+        </div>
+      </div>
+
+      <button class="lever" id="pull">
+        Pull the lever
+        <small>Manufacture one (1) post</small>
+      </button>
+
+      <div class="mini-row">
+        <button class="mini" id="maxOut">Max everything</button>
+        <button class="mini" id="reset">Factory reset</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Generated post">
+    <div class="stage-bar">
+      <h2>Output Tray</h2>
+      <div class="meters">
+        <span>Chars <b id="mChars">0</b><b id="mLimit"> / 3000</b></span>
+        <span>Lines <b id="mLines">0</b></span>
+        <span>Units built <b id="mCount">0</b></span>
+      </div>
+    </div>
+
+    <div class="tray halftone">
+      <article class="post" id="post">
+        <div class="post-top">
+          <div class="avatar" id="avatar">CV</div>
+          <div class="who">
+            <div class="nm"><span id="pName">Chad Vandergrift</span><span class="badge">Creator</span></div>
+            <div class="hd" id="pHeadline">Founder &amp; CEO @ stealth (it is a Notion page)</div>
+            <div class="mt"><span id="pTime">3h</span><span>·</span><span>Edited</span></div>
+          </div>
+          <button class="follow" type="button">+ Follow</button>
+        </div>
+
+        <div class="clipwrap">
+          <div class="body" id="body">Pull the lever.</div>
+          <div class="more-row" id="moreRow" hidden>
+            <button class="seemore" id="seemore">…see more</button>
+          </div>
+        </div>
+
+        <figure class="shot" id="shot">
+          <div class="shot-chrome" aria-hidden="true">
+            <i></i><i></i><i></i><span id="shotUrl">dashboard.zaply.com/revenue</span>
+          </div>
+          <div class="shot-head">
+            <div>
+              <p class="shot-label">Gross volume · Last 30 days</p>
+              <p class="shot-num" id="shotNum">$0</p>
+              <p class="shot-delta"><i></i><span id="shotDelta">▲ +0%</span><em>vs previous period</em></p>
+            </div>
+            <div class="shot-range" aria-hidden="true"><b>30D</b><span>90D</span><span>ALL</span></div>
+          </div>
+          <div class="shot-plot" id="shotPlot">
+            <svg id="shotSvg" viewBox="0 0 600 190" preserveAspectRatio="none" role="img"
+                 aria-labelledby="shotAlt"><title id="shotAlt">Gross volume, last 30 days</title></svg>
+            <div class="tip" id="shotTip"></div>
+          </div>
+          <div class="shot-x" aria-hidden="true">
+            <span id="xA">1 Aug</span><span id="xB">15 Aug</span><span id="xC">30 Aug</span>
+          </div>
+          <figcaption class="shot-foot">
+            <span>Customers <b id="shotCust">0</b></span>
+            <span>Churn <b id="shotChurn">0%</b></span>
+            <span>ARPU <b id="shotArpu">$0</b></span>
+          </figcaption>
+        </figure>
+
+        <div class="stats">
+          <div class="reacts">
+            <i class="react" style="background:#fc5000"></i>
+            <i class="react" style="background:#524ae9"></i>
+            <i class="react" style="background:#f5f28e"></i>
+            <span class="count" id="likes">0</span>
+          </div>
+          <span id="commentCount">0 comments · 0 reposts</span>
+        </div>
+
+        <div class="actions">
+          <button class="act" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10H3V10zM7 10l4.5-7a2 2 0 013.4 2L13 10h6a2 2 0 012 2.4l-1.8 6A2 2 0 0117.2 20H7"/></svg>Like</button>
+          <button class="act" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-8 8H4l2.2-3A8 8 0 1121 12z"/></svg>Comment</button>
+          <button class="act" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V7a3 3 0 013-3h11M18 4l-3-3M18 4l-3 3M20 15v2a3 3 0 01-3 3H6M6 20l3 3M6 20l3-3"/></svg>Repost</button>
+          <button class="act" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>Send</button>
+        </div>
+      </article>
+
+      <p class="unit-stamp">
+        <span>Unit <b id="uNo">001</b></span>
+        <span>Pressed at <b id="uPsi">0</b> PSI</span>
+        <span>Grade <b id="uGrade">—</b></span>
+        <span>Consequences <b>0</b></span>
+      </p>
+    </div>
+
+    <div class="tools">
+      <button class="tool primary" id="copyBtn">Copy the shame</button>
+      <button class="tool" id="againBtn">Same inputs, new post</button>
+      <button class="tool" id="linkBtn">Copy share link</button>
+      <button class="tool" id="postBtn">Post it for real</button>
+    </div>
+
+    <p class="ticker" id="ticker">
+      <b>Foundry log —</b> boiler cold. Feed the machine a SaaS name and pull the lever.
+    </p>
+  </section>
+</main>
+
+<dialog id="modal">
+  <div class="mo">
+    <h3 id="moTitle">Posted.</h3>
+    <p id="moBody">Nothing happened.</p>
+    <p class="fine" id="moFine"></p>
+    <button id="moClose" type="button">Back to building</button>
+  </div>
+</dialog>
+
+<p class="foot"><span>
+  Broetry Foundry is a parody. Every name, company, metric, revenue chart and moment of
+  personal growth on this page is fabricated by a random number generator with no inner life.
+  Nothing is posted anywhere. No network is contacted. Your idea is still not a business.
+</span></p>
+<script>
+/* ══════════════════════════════════════════════════════════
+   THE STOCKROOM
+   Raw material for the extrusion process. {saas} {thing}
+   {when} {mrr} {arr} {delta} and {customers} are substituted at
+   manufacture time, from one shared metrics object.
+   ══════════════════════════════════════════════════════════ */
+
+const SAAS_A = ["Zap","Flow","Synth","Hyper","Loom","Vibe","Grid","Pulse","Stack","Nomad",
+  "Orbit","Quill","Drift","Forge","Beacon","Lumen","Cinder","Kestrel","Vantage","Ripple",
+  "Nimbus","Ember","Halcyon","Turbo","Slate","Cobalt","Mango","Static","Prism","Nudge",
+  "Axiom","Verve","Tally","Bolt","Cascade","Torrent","Perch","Fathom","Lattice","Anvil",
+  "Vellum","Meridian","Solace","Tempo","Rally","Onyx","Sable","Junip","Wisp","Alto",
+  "Marrow","Fennel","Klaxon","Thicket","Quarry","Plume","Basalt","Harrow","Vellichor"];
+const SAAS_B = ["ly","r","ify","base","flow","stack","kit","OS","AI",".dev","hq","labs",
+  "wise","gen","deck","board","loop","forge","mind","craft","wave","sync","grid","pilot",
+  "port","desk","room","path","core","node","pad","hub","werk",".io","one","works"];
+
+const FIRST = ["Chad","Bryce","Tanner","Dex","Kyler","Brandt","Colt","Prescott","Hux",
+  "Grayson","Rook","Beau","Chase","Ridge","Truett","Zane","Maverick","Ford","Wilder","Cash",
+  "Sawyer","Brody","Kaden","Talon","Ozzy","Rafe","Baxter","Griff","Lucian","Thorne",
+  "Blaise","Dashiell","Remy","Bo","Sterling","Duke","Fitz","Cormac","Jed","Ansel"];
+const LAST = ["Vandergrift","Peakman","Hollowell","Strongfellow","Ironmonger","Quailwood",
+  "Beckstrom","Ashgrove","Pemberly-Nash","Croft","Sterling","Winterbourne","Hargreave",
+  "Blackwood","Fenwick","Rothsay","Kingsolver","Danforth","Van Der Molen","Ashcombe",
+  "Rutherglen","Hollingsworth","Beaumont-Price","Stillwell","Okonkwo-Fairbanks","Delacroix",
+  "Whitlock","Ravenscroft","Alderney","Thackeray","Northcote","Bramble","Quillfeather"];
+
+const HEADLINES = [
+  "Founder & CEO @ stealth (it is a Notion page)",
+  "3x Founder · 0x Exited · 1x Audited",
+  "Builder | Thinker | Owner of a ring light",
+  "Ex-Google (I have walked past the campus)",
+  "Helping founders unlock the founder inside the founder",
+  "AI-first. Sleep-second. Rent-third.",
+  "Turning ideas into invoices into small claims court",
+  "I write about discipline from a beanbag",
+  "Serial entrepreneur (the cereal is the product)",
+  "Chief Vision Officer at a company with one chair",
+  "Angel investor ($40, once, to a friend)",
+  "Scaling humans. Descaling kettles. Same energy.",
+  "I don't do meetings. I do momentum.",
+  "Building the future, allegedly",
+  "Founder | I ship, therefore I post",
+  "Making things · Mostly this post",
+  "0 → 1 guy (currently at 0.4)",
+  "Building in public | Suffering in private",
+  "CEO, CTO, CFO and the person who empties the bin",
+  "Formerly employed",
+  "I turn coffee into landing pages",
+  "Solving problems nobody has, quickly",
+  "Founder @ a company you'll hear about from me, repeatedly",
+  "Talks about #building #shipping #mindset #nothing",
+  "Ex-hospitality, now disrupting hospitality",
+  "Bootstrapped, burned out, back again",
+  "Helping 0 people scale to 1",
+  "I post daily. Nobody asked.",
+  "Advisor (unpaid, unasked)",
+  "Product person. Also the product.",
+  "Currently building | Previously also building",
+  "Investor in myself (small cheque, cleared slowly)",
+  "Head of Everything at a company of one",
+  "I have a newsletter. Please.",
+  "Thought leader (self-appointed, self-certified)"
+];
+
+const THINGS = [
+  "an AI that texts your landlord in a tone best described as legally menacing",
+  "a CRM for people who owe you money emotionally",
+  "a Slack bot that ends meetings by turning off the building",
+  "an app that tells your houseplants they are doing a great job",
+  "a marketplace where you hire someone to be visibly disappointed in you",
+  "a browser extension that replaces the word synergy with a scream",
+  "a Chrome extension that makes every email four percent more threatening",
+  "a subscription box for regret",
+  "a note-taking app that reads your handwriting aloud in a disappointed voice",
+  "an AI cofounder that ghosts you exactly like a real one",
+  "a calendar that declines anything before 11am on moral grounds",
+  "a fitness tracker for your emotional core",
+  "a dashboard that shows one number, and the number is a lie",
+  "a dating app for people who exclusively date their own startup",
+  "an escrow service for unresolved group chats",
+  "a compliance tool that just says probably fine in nine languages",
+  "a Zoom filter that makes you look like you slept",
+  "a Kanban board that physically rearranges your furniture",
+  "an AI that writes your apology before you do the thing",
+  "a SaaS that turns any PDF into a slightly different PDF",
+  "an analytics platform that measures vibes to four decimal places",
+  "a two-sided marketplace connecting people who have opinions with people who did not ask",
+  "a productivity app that locks your fridge until you ship",
+  "an AI therapist that keeps pitching you its Series A",
+  "a smart mirror that reads your quarterly goals back to you at breakfast",
+  "a habit tracker that reports you to your mother",
+  "a meeting-notes tool that only records the sighs",
+  "an inbox that replies to itself and cc's you out of politeness",
+  "a wellness app whose only feature is turning the wellness app off",
+  "an on-demand service that sends a man in a vest to say the word scalable",
+  "an AI that reads your Slack and tells you which meeting to fake illness for",
+  "a to-do list that deletes anything untouched for nine days, permanently, without warning",
+  "a résumé builder that quietly removes your worst job",
+  "an app that converts your unread emails into a single number and then hides it",
+  "a browser extension that greyscales any website that has ever asked for your postcode",
+  "a service that calls your phone during bad dates",
+  "an AI that summarises your friends",
+  "a budgeting app that shouts",
+  "a group-chat referee that awards points and closes disputes permanently",
+  "a smart doorbell that negotiates on your behalf",
+  "a browser tab that exists only to be closed",
+  "a habit tracker with one habit and the habit is be normal",
+  "an AI that writes your standup update from your commit history, which in my case is empty",
+  "a marketplace for unfinished side projects",
+  "a font that gets angrier the longer you take to reply",
+  "an inbox-zero tool that achieves inbox zero by archiving everything and lying",
+  "a calendar that inserts fake meetings so you look busy to yourself",
+  "a wellness app that bills you for the guilt",
+  "an AI that turns any voice note into a bullet point and any bullet point into a voice note",
+  "a password manager that judges you audibly",
+  "a note app whose only feature is a large red button labelled NOT NOW",
+  "an AI that reads your ex's profile so you don't have to, and lies about how they're doing",
+  "an expense tool that categorises everything as growth",
+  "a scheduling link that only offers times you will come to regret",
+  "a status update that revises itself with increasingly implausible excuses",
+  "a CRM so persistent it has been blocked in two countries",
+  "a design tool with one button, and the button says make it look expensive",
+  "an AI cofounder that disagrees with you on principle and is usually right",
+  "an analytics tool that shows you nothing until you have done something",
+  "an onboarding flow that asks one question: are you sure",
+  "a landing page generator that only produces landing pages for itself",
+  "a newsletter that writes itself and unsubscribes you when it senses hesitation",
+  "an app that tells you which of your friends is also awake",
+  "a productivity system so demanding that quitting it is the productivity gain",
+  "a rebranding service for people, not companies"
+];
+
+const CANT_CODE = [
+  "I still think HTML is a programming language.",
+  "I have never once successfully centred a div.",
+  "My entire technical background is aggressively closing pop-ups.",
+  "I thought Python was a snake until March.",
+  "I once bricked a microwave attempting a firmware update.",
+  "I do not know what a terminal is. I have four of them open.",
+  "My last commit message was 'asdfgh please'.",
+  "I believe the cloud is a physical building in Utah that I could visit.",
+  "I failed the spreadsheet module of a hospitality diploma.",
+  "My degree is in Equine Studies. Distinction.",
+  "I have been removed from three Discord servers for asking what a repo is.",
+  "My IDE is a Google Doc.",
+  "I once deleted the production database and described it publicly as a pivot.",
+  "Ctrl+Z is my version control and it has never let me down until it did.",
+  "I have never read documentation. Documentation reads me.",
+  "The last thing I built with my hands was a bad relationship.",
+  "I am, by court order, not permitted within 40 feet of a server rack in Ohio.",
+  "I call every bug undocumented delight and every outage a listening exercise.",
+  "I cannot open a ZIP file without emotional support.",
+  "I once tried to right-click on a printed page.",
+  "I once emailed a website to ask if it could be bigger.",
+  "I have never used a keyboard shortcut I did not discover by accident.",
+  "I thought 'the stack' was a seating arrangement.",
+  "My browser has 41 tabs and I am frightened of all of them.",
+  "I refer to the command line as 'the black one'.",
+  "I have restarted a laptop to fix a spelling mistake.",
+  "I do not know the difference between a font and a typeface, and I have strong opinions about both.",
+  "I once spent an entire day debugging a problem that turned out to be Caps Lock.",
+  "I have printed an email in order to read it properly.",
+  "I have described a dropdown menu as 'the little curtain'.",
+  "My password is the one from 2011 with a number added under duress.",
+  "I once tried to Google something from inside a PDF.",
+  "My highest technical achievement before this was successfully cancelling a subscription.",
+  "I have never won an argument with a printer.",
+  "I still say the internet is being slow when I mean that I am.",
+  "I once asked an engineer whether the website was inside my laptop. He went for a walk.",
+  "I have never opened Terminal on purpose. It has opened itself, and we do not discuss it.",
+  "The most complex thing I have configured is a smart bulb, and it is still orange.",
+  "I have called a semicolon 'the winky one' in a professional setting.",
+  "I do not know what a package is. I have installed three hundred of them.",
+  "I use screenshots as a filing system.",
+  "I have replied-all to explain that people should not reply-all.",
+  "My entire understanding of security is that the padlock should be closed.",
+  "I once tried to drag a file into a phone call.",
+  "I have two monitors and I use one of them to look at the other one."
+];
+
+const WHEN = [
+  "one weekend","a single Pomodoro","the time it took my oat milk to steam","47 minutes",
+  "one red-eye to SFO","a haircut","the length of exactly one podcast about discipline",
+  "the duration of my nephew's birthday party",
+  "six hours, three of which were spent choosing a font","a Tuesday",
+  "one silent retreat, during which I was not silent",
+  "the second half of a dentist appointment",
+  "eleven minutes, and I want to be honest, that number frightens me too",
+  "the flight from Austin to Denver, minus the beverage service",
+  "one flight to Lisbon and the taxi queue afterwards",
+  "an afternoon I had booked off for something else entirely",
+  "the last 90 minutes of a workday I was already being paid for",
+  "the time between deciding and telling anyone",
+  "two hours, one of which was naming it",
+  "a single train journey with poor signal, which turned out to be the feature",
+  "the gap between two meetings that both got cancelled",
+  "one long shower and the sitting-on-the-bed-in-a-towel period that follows",
+  "the exact length of my daughter's swimming lesson",
+  "a bank holiday Monday",
+  "one hour, though I had been thinking about it for two years, which apparently still counts as one hour",
+  "the period between ordering a sandwich and receiving it",
+  "an entire night, which I now understand is not a flex but a symptom",
+  "the second week of January, when everyone is soft",
+  "three sittings, spaced across one very confusing Sunday",
+  "a delayed flight, and I would like to thank that airline personally"
+];
+
+/* revenue brag lines — {mrr} {arr} {delta} {customers} are the same
+   numbers the attached chart is drawn from, so the flex is consistent */
+const MONEY = [
+  "It is now doing {mrr} MRR.",
+  "{mrr} MRR. Which is {arr} ARR, if you say it quickly and don't stop.",
+  "Currently at {mrr} MRR. I check it the way other people check on a sleeping child.",
+  "{mrr} MRR, up {delta} this month. I have made a chart. The chart is attached.",
+  "We just crossed {mrr} MRR with {customers} customers and zero employees.",
+  "{arr} ARR, annualised from one extremely good Tuesday.",
+  "As of this morning: {mrr} MRR. As of tonight: also {mrr} MRR, but louder.",
+  "{mrr} MRR. I am aware that is not a lot. I have told forty people.",
+  "{customers} paying customers. One of them is my mother. She pays full price and I let her.",
+  "{mrr} MRR and a burn rate of one man's will to live.",
+  "Screenshot attached, because nobody believes the guy who can't code.",
+  "{arr} ARR. That's the number. I'm not going to pretend it isn't the number.",
+  "{mrr} MRR, {delta} month over month, and a support inbox I answer from bed.",
+  "{customers} customers in {when}. I have not slept and it shows in the chart.",
+  "{mrr} MRR. Stripe sent me a congratulations email and I printed it.",
+  "Revenue: {mrr} MRR. Costs: every tool that promised to be free forever.",
+  "{arr} ARR run rate, which is a phrase I learned nine days ago and now deploy constantly.",
+  "{mrr} MRR. My old salary divided by twelve was more. I don't care. It's mine.",
+  "{delta} growth this month. From a very small number. Growth is growth.",
+  "{mrr} MRR across {customers} accounts, and I know every single one of their first names.",
+  "{arr} ARR. Bootstrapped. No investors. No cofounder. No idea.",
+  "{mrr} MRR — and before anyone asks, yes, that's net of refunds, of which there were several."
+];
+
+const HOOKS = [
+  "I just built {thing} in {when}.\nI cannot code.",
+  "Total build time: {when}.\nTotal coding ability: none.\nThe product: {thing}.",
+  "I built {thing} in {when} and I have never written a line of code in my life.",
+  "Nobody asked for this.\nI built it anyway.\n{thing}, shipped in {when}.",
+  "Everyone told me I needed a technical cofounder.\nI had {saas} and {when}.",
+  "I shipped {thing} today.\nI want to be very clear that I do not know how computers work.",
+  "Read this if you have an idea and no skills.\nThat was me on Sunday.",
+  "Stop me if you've heard this one: a man who cannot code builds {thing} in {when}.",
+  "{when}.\nThat's it. That's the whole story.\nWell — that and {thing}.",
+  "I am not a developer.\nI am barely a user.\nI built {thing} anyway.",
+  "I have no technical skills and a product with paying users.\nThose two facts sit beside each other every morning and neither has apologised.",
+  "Nine days ago: a note in my phone.\nToday: {thing}.\nI still cannot code.",
+  "Unpopular opinion: you do not need to learn to code.\nEvidence: me. {thing}. {when}.",
+  "This is going to sound like a humblebrag.\nIt is a brag. There is nothing humble here.\nI built {thing} in {when}.",
+  "I want to talk about {when}.\nSpecifically, what I did with it.",
+  "A year ago I could not open a ZIP file.\nLast night I shipped {thing}.",
+  "Genuine question: when did building get this easy?\nI made {thing} in {when} and I am not a serious person.",
+  "{thing}.\nBuilt in {when}.\nBy someone who has never opened a code editor.",
+  "I'm going to say something that will annoy a lot of you.\nI built {thing} and I did not learn a single thing in order to do it.",
+  "No one is coming to save you.\nSo I built {thing} instead. In {when}.",
+  "Three things happened this week.\nOnly one of them matters: I shipped {thing}.",
+  "Here's what nobody tells you about building a product with no skills:\nnothing. Nobody tells you anything. You simply begin.",
+  "I've been quiet on here for a while.\nI was building.\n{thing}. {when}. Live now.",
+  "Most people overestimate what they can do in a year.\nI underestimated what I could do in {when}.",
+  "There is a version of me from {when} ago who did not have a product.\nI try not to think about him.",
+  "{saas} and I built {thing} together.\nIt did the work. I did the posting.",
+  "I did not go to university for this.\nI did not go to university.",
+  "Someone told me last month that I was 'not technical'.\nThey were correct.\nI shipped {thing} anyway.",
+  "My screen time yesterday was eleven hours.\nSeven of them produced {thing}.",
+  "STOP scrolling.\nI built {thing} in {when}, I cannot code, and I need you to sit with that."
+];
+
+const HOOKS_THING = HOOKS.filter(h => h.includes("{thing}"));
+
+const BEATS = [
+  "Everyone said I needed a technical cofounder.",
+  "My technical cofounder said I needed a technical cofounder.",
+  "I described the app to {saas} the way you describe a dream to a stranger at a bus stop.",
+  "It shipped.",
+  "It shipped before I finished the sentence.",
+  "I did not write a single line of code.",
+  "I wrote one line of code. It was an apology, in a comment.",
+  "The first user signed up at 2:14am. I know, because I was awake, watching.",
+  "I refreshed Stripe 400 times. Then 401 times.",
+  "A VC replied 'interesting'. I have not recovered.",
+  "I named it before I built it. That is the only real advice I have.",
+  "My designer friend said the logo looked like a hospital. I kept it.",
+  "I shipped it broken on purpose, to see who would care.",
+  "Nobody cared. That was data.",
+  "Then somebody cared. That was also data.",
+  "My first refund request arrived in nine minutes. I have it framed.",
+  "Somewhere in there I forgot to eat, which I'm told is not a strategy.",
+  "I paused. I looked out of the window. A pigeon was also building something.",
+  "I told my wife I was building. She said yes, but what. I did not have an answer then.",
+  "I have an answer now. It is still 'building'.",
+  "At hour four I stopped and just sat with it.",
+  "I did not tell anyone for two days. Then I told everyone for six weeks.",
+  "Someone on the internet called it derivative. They were right. I thanked them.",
+  "I onboarded my first user by physically holding their phone.",
+  "The support inbox arrived before the product did.",
+  "I have since learned what a database is. I wish I hadn't.",
+  "I built the landing page before the product, then the waitlist before the landing page.",
+  "I have a Notion doc called THE PLAN. It contains the word 'ship' forty-one times.",
+  "I bought the domain at 1am. That was the commitment device.",
+  "I bought eleven domains. I am using none of them.",
+  "My first pricing page had one tier and it was called 'Yes'.",
+  "I set the price at $9. Then $29. Then $9. Then I stopped looking.",
+  "Someone asked for an enterprise plan. I said yes before I understood the question.",
+  "I have a competitor now. I found them by searching my own idea, which I should have done first.",
+  "I posted about it and got four likes. Three were mine, across two accounts.",
+  "I messaged 200 people. 198 did not reply. The two who did are now my entire roadmap.",
+  "I described myself as a founder out loud for the first time and my voice did a thing.",
+  "Someone signed up with an address I did not recognise and I felt something close to love.",
+  "I have a churn rate now. It is 100%. But it is a rate.",
+  "I read the analytics for forty minutes. The analytics said: one person, briefly.",
+  "I made a Discord. I am the only member. I have muted it.",
+  "The AI wrote a function I did not understand and I approved it like a manager.",
+  "I have started saying 'we' and there is no we.",
+  "I told my accountant. He asked if it was a hobby. Legally, yes.",
+  "I built a dark mode before I built a signup form.",
+  "I spent two hours on the favicon. The favicon is a triangle.",
+  "The onboarding flow has seven steps. The product has one.",
+  "I added a testimonials section and filled it with things I hope people will say.",
+  "I approached an influencer. He replied 'rate card attached'. The rate was my rent.",
+  "I have a roadmap. It is a list of features I will never build, in order.",
+  "The changelog is longer than the product.",
+  "I wrote a manifesto. Nobody has read the manifesto. The manifesto is very good.",
+  "I ordered stickers. The stickers arrived before the first customer.",
+  "There is a hoodie. There should not be a hoodie.",
+  "I applied to an accelerator and described myself as 'relentlessly resourceful' four times.",
+  "I was rejected in eleven days. I refreshed the portal on nine of them.",
+  "A stranger emailed to say the site was down. It was not down. He was.",
+  "My first bug report was written entirely in lowercase and it broke something in me.",
+  "I fixed it by asking {saas} to fix it, and then saying thank you.",
+  "I do say thank you to it. I don't know what I'm hedging against.",
+  "I have started dreaming in landing page copy.",
+  "Someone asked what my moat was. I said 'speed'. I meant 'none'.",
+  "An investor asked for my TAM. I said 'everyone, eventually'.",
+  "I made a pitch deck for a company with no employees and it had an org chart.",
+  "The org chart was me, four times, in different colours.",
+  "I hired a virtual assistant to help me manage the four users.",
+  "I answer support in under a minute, which is unsustainable and also the only thing I am good at.",
+  "I refunded someone before they asked. They had not asked.",
+  "I turned the notifications off. Then I turned them back on. Then I just sat there.",
+  "I have not told my employer. My employer follows me on here. Hi.",
+  "I built the mobile app in an afternoon. It is the website with the address bar hidden.",
+  "I described myself as 'technical-adjacent' at an event and a real engineer heard me say it.",
+  "I have started using the word 'ship' as a personality.",
+  "I set a 5am alarm. I have never once been awake for it. I keep setting it.",
+  "The gym membership lapsed. The hosting bill did not.",
+  "I have $18 in revenue and $340 of tools to track the $18.",
+  "Every tool has a free tier and I am on all of them, permanently, like a ghost.",
+  "My mother asked what it does. I explained for six minutes. She said 'so, an app'.",
+  "She was right. It is an app.",
+  "I keep a list of people who said it wouldn't work. It has one name on it and it's mine.",
+  "Someone posted it to an aggregator. It was on the front page for nine minutes and I aged four years.",
+  "The top comment was 'why'. I have thought about 'why' every day since.",
+  "I replied to the top comment. I should not have replied to the top comment.",
+  "I have learned that shipping is a feeling and not an event, and also that it is an event, and I have not shipped."
+];
+
+const CRY = [
+  "I cried. Not a lot. But not a little.",
+  "I cried in a Chipotle. The staff were professional about it.",
+  "I welled up. Then I screenshotted the dashboard, then I welled up again.",
+  "I sat in my car in a Costco car park and I wept, and I want to normalise that.",
+  "I am not a crier. I cried.",
+  "Tears. Actual tears. Over a payment notification for $4.",
+  "I cried on a Peloton, which is the most 2020s sentence I have ever written.",
+  "I got emotional. In a Pret. Over a webhook.",
+  "I did not cry. My eyes did something adjacent and I did not stop them.",
+  "I cried at the airport, which is the correct place — everyone there is already crying.",
+  "I welled up reading my own changelog, which I am aware is a red flag.",
+  "I cried, and then I screenshotted the thing that made me cry, which is who I am now.",
+  "There were tears. Modest ones. Professional tears.",
+  "I cried on the phone to my sister and she said 'about the app?' in a particular tone.",
+  "I have cried twice this month and on both occasions it was about software.",
+  "I did cry, but I want to be clear that it was mostly the sleep."
+];
+
+const HUMBLE = [
+  "I'm not special.",
+  "I'm genuinely not smart. Ask anyone who has met me.",
+  "This isn't a flex.",
+  "I say this with total humility and also a screenshot.",
+  "I'm not the hero of this story. The tool is. Mostly me though.",
+  "Anyone could do this. Statistically, almost nobody will.",
+  "I want to be careful here, because I did nothing.",
+  "Please don't congratulate me. Please do repost this.",
+  "I want to be honest: I got lucky, and I intend to keep getting lucky.",
+  "There is nothing exceptional about me, and that is exactly the point I am making at length.",
+  "I hesitated to post this. For nine minutes.",
+  "I don't say this to impress you. I say it to impress me, and you are simply here.",
+  "Full transparency: I have no idea what I'm doing and it is going very well.",
+  "I share this not as an expert but as someone who has been described as confident.",
+  "Take this with a pinch of salt. I have taken nothing with a pinch of salt.",
+  "I'm still learning. I have learned nothing. Both are true.",
+  "Credit where it's due: none of this was me. Some of it was me.",
+  "This is not advice. I am not qualified to give advice. Here is my advice.",
+  "Small win. Tiny, really. I have told forty people.",
+  "I nearly didn't share this, and then I did, twice, on two platforms."
+];
+
+const KID = [
+  "My six-year-old looked at the landing page and said 'what is it'.\nI have thought about that every day since.",
+  "My daughter asked what I do. I said I help people. She said 'with what'. Ship faster.",
+  "My nephew asked why the button was grey. He is nine. He is now Head of Design.",
+  "A child at a birthday party told me the name was bad. He is correct and he is not on the cap table.",
+  "My son asked if I was famous now. I said no. He said 'ok' and left the room, and I sat there.",
+  "My four-year-old drew the logo. It's better. It's in production.",
+  "A child at the park asked what the app does. I gave her the full pitch. She left.",
+  "My daughter has started saying 'we're building'. I need to fix something.",
+  "My kid asked why I'm always on the laptop. I said I'm building something for us.\nHe asked if it was a trampoline.",
+  "It was not a trampoline.",
+  "My nephew signed up, used it once, and gave feedback so precise I have hired him in my heart.",
+  "My niece said 'the loading bit is boring'. Nine words. Best user research I have ever paid nothing for."
+];
+
+const UBER = [
+  "My Uber driver asked what I do.\nI told him.\nHe said 'so, nothing'.\nHe was right, and he was also wrong, and that is entrepreneurship.",
+  "An Uber driver told me the real product is the discipline. He then gave me one star.",
+  "My taxi driver in Lisbon explained product-market fit better than any book. His name was Rui.\nRui, if you're on here — thank you.",
+  "My barber asked what I do. I told him. He said 'so you're unemployed, but online'. I've framed it.",
+  "The man at the corner shop asked how the app was going. I have never told him about an app.",
+  "A stranger on a train saw my screen and said 'that's a lot of tabs'. It was a diagnosis.",
+  "My dentist asked about the startup mid-procedure. I could not answer. Best conversation we've had.",
+  "The woman at the coffee place has started asking about MRR. I have created a monster and she is, emotionally, my only investor.",
+  "My plumber told me to charge more. He then charged me more. Everything is a masterclass.",
+  "A delivery driver told me the name was hard to spell. It was. I changed it. Thank you, Marek.",
+  "I explained the product to a taxi driver in Athens using only hand gestures and he understood it faster than the VCs.",
+  "The guy at the gym said 'so it's like Notion'. Everything is like Notion. Notion is like Notion."
+];
+
+const WHY_Q = [
+  "So — why should you use {saas}?",
+  "Which brings me to the question I get asked most.\nWhy should I use {saas}?",
+  "Now everyone is in my DMs asking the same thing:\nwhy should I use {saas}?",
+  "And people keep asking me: why {saas}?",
+  "So, why {saas}, and not the seventeen other tabs you have open?",
+  "The question I get every single day: why should I use {saas}?",
+  "So here's what everyone actually wants to know:\nwhy should I use {saas}?",
+  "Fine. Let's do the part you scrolled for.\nWhy {saas}?",
+  "Three separate people asked me this today alone.\nWhy should I use {saas}?",
+  "I'll pre-empt the comments.\nWhy {saas}, and not the thing you already pay for?",
+  "The question underneath every message I've had this week:\nwhy should I use {saas}?",
+  "Someone will ask, so:\nwhy {saas}?",
+  "Right. The bit you're here for.\nWhy should I use {saas}?",
+  "And yes — before you comment it — why {saas}?",
+  "Let me answer the question I have been avoiding.\nWhy should I use {saas}?"
+];
+
+const WHY_A = [
+  "You shouldn't.\nYou should have used it last year.",
+  "Wrong question.\nThe right question is why you haven't.",
+  "Because the alternative is doing it yourself, and we have both seen you.",
+  "Because {saas} doesn't ask what you want.\nIt asks who you are becoming.",
+  "Honestly? I don't know.\nI just work here now, spiritually.",
+  "Because it took me from 'I can't' to 'I shouldn't have' in under an hour.",
+  "Because it turns 'I have an idea' into 'I have a support inbox' overnight.",
+  "I'm not going to tell you.\nThat's between you and {saas}.",
+  "Because it is the only tool that has never once asked me a clarifying question.",
+  "Because I asked it for {thing} and it did not laugh.",
+  "Because it did in {when} what I had spent two years not doing.",
+  "Because it has never told me an idea was bad, which is either a feature or a warning.",
+  "Because the gap between wanting and having is now a text box.",
+  "Because every other tool made me feel stupid.\nThis one lets me stay stupid, productively.",
+  "Because it does not know that I don't know.",
+  "Because the worst thing it can do is nothing, and nothing is what I was already doing.",
+  "Because 'I'll learn to code first' is the most expensive sentence in the English language.",
+  "Because I've shipped more this month than in the six years I spent reading about shipping.",
+  "Because it genuinely does not care about your background.\nIt has not asked once.",
+  "Look — it's a tool.\nI'm the story.\nBut it is a very good tool.",
+  "Because I have customers now, and I used to have opinions.",
+  "Because the alternative was a technical cofounder with equity and boundaries.",
+  "Honestly, the tool is fine.\nThe unlock was being allowed to start badly.",
+  "Because it turned a two-year 'someday' into a Tuesday.",
+  "Because I never once had to say the words 'I don't know how' out loud, to a person.",
+  "Because it let me be embarrassed in private, which is the only kind of learning I will accept.",
+  "Because I stopped needing permission, and it turns out permission was the entire bottleneck.",
+  "I'll be straight with you: partly it's the tool.\nMostly it's that I finally ran out of excuses.",
+  "Because you have had your idea for longer than I have had a company.",
+  "Because I typed one paragraph and it did not ask me a single follow-up question about scope."
+];
+
+const MORALS = [
+  "The barrier to entry was never skill.\nIt was the seventeen seconds before you start.",
+  "Ideas are worthless.\nExecution is worthless.\nPosting about it is everything.",
+  "You don't need permission.\nYou need a card on file and a total absence of shame.",
+  "Build in public.\nSuffer in private.\nPost the suffering.",
+  "The gap between you and me is not talent.\nIt's that I have no other hobbies.",
+  "Stop learning.\nStart shipping.\nLearn later.\nNever learn.",
+  "Your competition is not smarter than you.\nThey are simply more online.",
+  "Perfect is the enemy of good.\nGood is the enemy of posted.",
+  "Every expert was once a beginner.\nI skipped both.",
+  "Do things that don't scale.\nThen post about them at a scale that alarms people.",
+  "The tool was never the hard part.\nThe hard part was admitting I wanted it.",
+  "Nobody is checking your credentials.\nNobody is checking anything.\nThat's the good news and the bad news.",
+  "You will not feel ready.\nReady is something you feel afterwards, about a different thing.",
+  "Skill is a moat.\nShipping is a bridge.\nI took the bridge.",
+  "The market does not ask how you built it.\nThe market does not ask anything.\nThe market is not thinking about you at all.",
+  "Everyone is winging it.\nSome people are winging it in public.",
+  "You are not behind.\nYou are simply not posting.",
+  "The best time to build was before you knew how hard it was.\nThe second best time is now, while you still don't.",
+  "Competence is overrated.\nMomentum is underrated.\nI have exactly one of these.",
+  "Do not learn to code.\nLearn to describe.\nDescription is the new syntax.",
+  "Nobody's first version was good.\nMine still isn't.\nIt's simply live.",
+  "You don't need a cofounder.\nYou need a deadline and somebody who will be disappointed.",
+  "There is no gate.\nThere was never a gate.\nThere was a queue, and we formed it ourselves.",
+  "Talent is a rumour.\nDeadlines are real.",
+  "The hardest part of building is the eleven minutes before you open the laptop.",
+  "Stop reading posts like this one.\nI am aware of what I have done.",
+  "Small and finished beats big and theoretical.\nEvery single time.\nI have no evidence for this.",
+  "Ship it embarrassing.\nEmbarrassing is a stage, not a verdict.",
+  "Your idea is not special.\nYour willingness to be seen doing it badly is.",
+  "The only unfair advantage left is being deliberately annoying about it."
+];
+
+const CTAS = [
+  "Agree?",
+  "Thoughts? 👇",
+  "Repost if you have ever built something at 3am for no discernible reason.",
+  "Comment BUILD and I'll send you the 40-page playbook I wrote in nine minutes.",
+  "Follow me for more content like this.\nThere is no more content like this.",
+  "Drop a 🔨 if you're building.\nDrop a 🪦 if you stopped.",
+  "Tag someone who needs to hear this.\nThey don't.",
+  "I'm hiring.\nI don't know for what.\nDM me.",
+  "Save this post. Read it in a year. Feel something.",
+  "What would you build if you knew you couldn't fail and also couldn't code?",
+  "Comment SHIP and I will reply with the same three words I reply to everyone.",
+  "Like this if you're building.\nIgnore it if you're thinking about building.\nWe both know which one you are.",
+  "I'll send the template to the first 50 people who comment.\nThere is no template.",
+  "What's the thing you'd build if the coding part disappeared?\nIt did. Go.",
+  "Reposting this helps more people than you think.\nIt helps me. I'm people.",
+  "If this resonated, you are the problem, and I love you.",
+  "Who else is building something stupid this weekend? 🙋",
+  "Bookmark this.\nYou won't come back.\nBookmark it anyway.",
+  "Connect with me if you're on the same journey.\nDon't pitch me.\nEveryone pitches me. Three people have pitched me.",
+  "Comment your idea below and I'll tell you it's good.\nThey're all good. That's the problem.",
+  "Send this to the friend who keeps saying 'I've got an idea'.",
+  "I'm doing free 30-minute calls with 5 founders this week.\nI have nothing to say.\nDM me.",
+  "Curious what you all think.\nGenuinely. I have nobody else to ask.",
+  "If you build something this week, tag me.\nI will engage with it aggressively.",
+  "Save this post.\nRead it when you're about to quit.\nIt will not help.",
+  "Follow along — I'm posting the entire journey.\nIt is mostly this.",
+  "Am I wrong? 👇 (I'm not wrong)",
+  "Comments are open.\nBe kind.\nI'm fragile and I have a product now."
+];
+
+const TAGS = ["buildinpublic","nocode","founder","hustle","saas","grindset","shipfast","AI",
+  "startup","vibecoding","solopreneur","10x","disrupt","mindset","b2b","growth","futureofwork",
+  "innovation","leadership","thoughtleadership","sundaythoughts","blessed","humbled","synergy",
+  "pivot","runway","productmarketfit","dayone","nosleep","execution","momentum","agile",
+  "founderlife","indiehacker","zerotoone","scale","MVP","gtm","northstar","firstprinciples",
+  "sidehustle","microsaas","launch","shipping","hardwork","noexcuses","discipline","consistency",
+  "riseandgrind","entrepreneur","AIfirst","automation","prompting","lowcode","tooling",
+  "productivity","remotework","personalbrand","storytelling","authenticity","vulnerability",
+  "transparency","thejourney","process","reflection","gratitude","motivation","mondaymotivation",
+  "revenue","MRR","ARR","bootstrapped","profitable","customerobsessed","velocity"];
+
+const BULLETS = ["→","•","↳","▸","–","👉","🔨","🚀","📈","💡","⚡","🧠","🔥","✅","🎯","📌","💥"];
+
+const LEVELS = [
+  {name:"Mildly Insufferable", beats:2, tags:3, psi:[18,34]},
+  {name:"Thought Leader",      beats:4, tags:6, psi:[35,55]},
+  {name:"Fully Unhinged",      beats:6, tags:11, psi:[56,74]},
+  {name:"Broetry Singularity", beats:9, tags:18, psi:[75,92]},
+  {name:"Ascended",            beats:13, tags:30, psi:[93,140]}
+];
+
+const PSI_WORDS = [
+  [0,25,"Barely a post. HR would allow this."],
+  [26,45,"Someone will comment 'love this'."],
+  [46,65,"Two people have muted you."],
+  [66,85,"Your old manager has seen it."],
+  [86,105,"Screenshotted into a group chat named 'no'."],
+  [106,999,"Structural failure. Evacuate the feed."]
+];
+
+const LOG = [
+  "extrusion nominal. {n} units in tray.",
+  "one (1) post pressed. Boiler at {n}%. Do not touch the boiler.",
+  "unit complete. No engineers were harmed, or consulted.",
+  "quality control passed by nobody.",
+  "post manufactured. Ethics module still uninstalled.",
+  "output stable. Self-awareness at 0%.",
+  "unit stamped. Somewhere, a recruiter sighed.",
+  "batch complete. The machine is proud of you and that is worrying.",
+  "pressed at {n} PSI. Feed the machine again.",
+  "shipped to tray. Nothing was shipped anywhere else.",
+  "unit ejected. Tray capacity: infinite. Dignity: finite.",
+  "pressed at {n} PSI. The gauge is not decorative.",
+  "extrusion clean. Nobody proofread this and nobody will.",
+  "one post. No refunds. No feelings.",
+  "output nominal. The machine has learned nothing, and neither have you.",
+  "unit complete. Somewhere a timeline is bracing.",
+  "batch pressed. Emoji reserves at 84%.",
+  "post formed. Structural integrity: rhetorical.",
+  "run complete. The hashtags were not checked for meaning.",
+  "unit pressed at {n}. Yes, the number is the pressure. No, it does not mean anything.",
+  "manufactured. Please do not operate the lever while emotional.",
+  "pressed and stamped. The Foundry accepts no responsibility for engagement.",
+  "revenue chart fabricated to four significant figures of nothing."
+];
+
+const MODALS = [
+  ["Posted.","Nothing happened. No network was contacted. Your career is exactly where you left it.","This button is a placebo. The best kind of button."],
+  ["Sent.","It bounced. There is no social network in this application. It is a rumour we repeat to each other.","Copy the post instead. Then reconsider. Then copy it again."],
+  ["Publishing…","Publishing failed, on purpose, as a favour to you.","The Foundry has a strict no-consequences policy."],
+  ["Success!","Zero (0) people saw this. Engagement: theoretical. Impact: spiritual.","Somewhere a real post is doing numbers. It is not this one."],
+  ["Post scheduled.","For a Tuesday that will never come. We call it Foundry Time.","You may now go outside."],
+  ["Upload failed.","Deliberately. The Foundry has never connected to the internet and does not intend to start.","Everything here is local, fictional, and entirely between us."],
+  ["Held for review.","Reviewed. Rejected. By us. On your behalf.","We did read it. It was a lot."],
+  ["Almost posted.","We got as far as the button and then thought better of it, on balance, for you.","The Foundry protects. That is the whole product."],
+  ["Queued.","Position in queue: 1. The queue is not moving. The queue has never moved.","This is the most honest social feature ever built."],
+  ["No.","We ran it past legal. Legal is a text file. The text file said no.","Copy it out and post it yourself if you're serious. You're not serious."],
+  ["Draft saved.","Nowhere. Saved nowhere. It is gone the moment you pull the lever again.","Impermanence is a feature. Copy it if you loved it."],
+  ["Delivered.","To zero (0) inboxes, on time, exactly as promised.","100% delivery rate. Zero recipients. Flawless."]
+];
+/* ══════════════════════════════════════════════════════════
+   THE MACHINE
+   ══════════════════════════════════════════════════════════ */
+const $ = (id) => document.getElementById(id);
+/* Every draw runs through one seeded generator (mulberry32). A share
+   link carries the seed, so opening it rebuilds that exact post rather
+   than a different post with the same settings. */
+let rngState = 1;
+function seedRng(n){ rngState = n >>> 0; }
+function rnd(){
+  rngState = (rngState + 0x6D2B79F5) | 0;
+  let t = Math.imul(rngState ^ (rngState >>> 15), 1 | rngState);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const R  = (n) => Math.floor(rnd() * n);
+
+/* Bigger pools alone don't stop repetition — a 13-of-84 draw still
+   collides often. Each pool remembers what it recently handed out and
+   draws from the remainder, so a line has to wait its turn. */
+let recent = new WeakMap();
+const resetMemory = () => { recent = new WeakMap(); };
+const memory = (a, n) => Math.min(Math.floor(a.length * 0.6), Math.max(0, a.length - n));
+
+function take(a, n) {
+  const seen = recent.get(a) || [];
+  const fresh = a.filter(x => !seen.includes(x));
+  const pool = (fresh.length >= n ? fresh : a).slice();
+  const out = [];
+  while (out.length < n && pool.length) out.push(pool.splice(R(pool.length), 1)[0]);
+  const keep = memory(a, n);
+  seen.push(...out);
+  while (seen.length > keep) seen.shift();
+  recent.set(a, seen);
+  return out;
+}
+const pick  = (a) => take(a, 1)[0];
+const pickN = (a, n) => take(a, n);
+
+/* ── the numbers, and the chart drawn from them ──────────
+   Text and screenshot read from one metrics object, so the
+   brag in the post always matches the graph beneath it. */
+const fmt = (n) =>
+  n >= 1e6 ? "$" + (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M"
+           : "$" + Math.round(n).toLocaleString("en-US");
+
+const SHAPES = ["hockey", "launch", "climb", "flat"];
+
+function makeMetrics(lvl, bleak) {
+  const band = [[120, 900], [900, 9000], [8000, 60000], [50000, 400000], [400000, 9400000]][lvl - 1];
+  const mrr  = bleak ? 3 + R(40) : band[0] + R(band[1] - band[0]);
+  const shape = bleak ? "flat" : pick(SHAPES);
+
+  /* 30 days of "gross volume", shaped to flatter */
+  const N = 30, series = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    let v;
+    if (shape === "hockey")      v = Math.pow(t, 3.1);
+    else if (shape === "launch") v = t < 0.72 ? t * 0.10 : 0.072 + Math.pow((t - 0.72) / 0.28, 1.7) * 0.93;
+    else if (shape === "climb")  v = t * 0.92 + (i === Math.floor(N * 0.6) ? -0.24 : 0);
+    else                         v = t * 0.06 + (i === N - 2 ? 0.5 : 0) + (i === 12 ? 0.18 : 0);
+    series.push(Math.max(0, v * mrr * (0.9 + rnd() * 0.2)));
+  }
+  series[N - 1] = mrr;
+
+  const deltas = ["+12,400%", "+840%", "+4,208%", "+∞%", "+99,000%", "+312%", "+1,904%", "+68,000%"];
+  return {
+    mrr, series, shape,
+    mrrTxt: fmt(mrr),
+    arrTxt: fmt(mrr * 12),
+    delta:  bleak ? "+200%" : pick(deltas),
+    down:   false,
+    customers: bleak ? 1 + R(3) : Math.max(1, Math.round(mrr / (9 + R(140)))),
+    churn: bleak ? "100%" : pick(["0.0%", "0.4%", "1.2%", "−4%", "0.02%", "n/a"]),
+  };
+}
+
+let ctx = {};
+const fill = (s) => s
+  .replaceAll("{saas}",  ctx.saas)
+  .replaceAll("{thing}", ctx.thing)
+  .replaceAll("{when}",  ctx.when)
+  .replaceAll("{mrr}",   ctx.mrr)
+  .replaceAll("{arr}",   ctx.arr)
+  .replaceAll("{delta}", ctx.delta)
+  .replaceAll("{customers}", ctx.customers);
+
+const sentences = (t) => t.split("\n").flatMap(l => l.split(/(?<=[.!?])\s+/)).join("\n");
+const flatten   = (t) => t.replace(/\n+/g, " ").trim();
+
+const rollSaas = () => pick(SAAS_A) + pick(SAAS_B);
+const rollName = () => pick(FIRST) + " " + pick(LAST);
+
+/* ── assemble one (1) post ──────────────────────────────── */
+function manufacture() {
+  const lvl   = +$("dial").value;
+  const L     = LEVELS[lvl - 1];
+  const on    = (id) => $(id).checked;
+
+  /* an empty field gets filled in, so the input always shows
+     what actually went into the post */
+  if (!$("fSaas").value.trim()) $("fSaas").value = rollSaas();
+
+  const bleak = rnd() < 0.16;
+  const met = makeMetrics(lvl, bleak);
+
+  ctx = {
+    saas:  $("fSaas").value.trim(),
+    thing: ($("fThing").value.trim() || pick(THINGS)),
+    when:  pick(WHEN),
+    mrr:   met.mrrTxt,
+    arr:   met.arrTxt,
+    delta: met.delta,
+    customers: met.customers.toLocaleString()
+  };
+
+  const blocks = [];
+  /* if the user typed what they built, the post has to actually say it —
+     not every hook interpolates {thing}, so draw from the ones that do */
+  blocks.push(fill(pick($("fThing").value.trim() ? HOOKS_THING : HOOKS)));
+  blocks.push(pick(CANT_CODE));
+  if (on("tMoney")) blocks.push(fill(pick(MONEY)));
+
+  /* the middle — story beats, interleaved with afflictions */
+  const mid = pickN(BEATS, L.beats).map(fill);
+  if (on("tCry"))  mid.splice(Math.min(mid.length, 1 + R(2)), 0, pick(CRY));
+  if (on("tKid"))  mid.push(pick(KID));
+  if (on("tUber")) mid.push(pick(UBER));
+
+  const tail = [];
+  if (on("tHumble")) tail.push(pick(HUMBLE));
+  /* the beat the whole genre exists for */
+  tail.push(fill(pick(WHY_Q)) + "\n\n" + fill(pick(WHY_A)));
+  tail.push(fill(pick(MORALS)));
+  tail.push(fill(pick(CTAS)));
+
+  const shape = (t) => on("tBroetry") ? sentences(t) : flatten(t);
+
+  /* bullets go on every line of the list or none of them — a
+     half-bulleted list reads as a bug rather than as a bit */
+  let midText = on("tBroetry") ? sentences(mid.join("\n"))
+              : mid.map(flatten).join(on("tEmoji") ? "\n" : " ");
+  if (on("tEmoji")) {
+    const b = pick(BULLETS);
+    midText = midText.split("\n").map(l => b + " " + l).join("\n");
+  }
+
+  let text = [...blocks.map(shape), midText, ...tail.map(shape)].join("\n\n");
+
+  if (on("tTags")) {
+    text += "\n\n" + pickN(TAGS, L.tags).map(t => "#" + t).join(" ");
+  }
+
+  /* pressure reading */
+  let psi = L.psi[0] + R(L.psi[1] - L.psi[0] + 1);
+  ["tBroetry","tEmoji","tCry","tHumble","tMoney","tKid","tUber","tTags","tChart"]
+    .forEach(id => { if (on(id)) psi += 3; });
+
+  return { text, psi, lvl, met, bleak };
+}
+
+/* ── draw the screenshot ─────────────────────────────────
+   Single series, so no legend — the label above names it.
+   Ember is the only mark colour (both source systems cap the
+   palette); grid and axes stay recessive; the endpoint is
+   emphasised and the whole plot carries a hover crosshair. */
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function drawShot(m, saas) {
+  const W = 600, H = 190, PADX = 14, PADY = 16;
+  const max = Math.max(...m.series) * 1.12 || 1;
+  const x = i => PADX + (i / (m.series.length - 1)) * (W - PADX * 2);
+  const y = v => H - PADY - (v / max) * (H - PADY * 2);
+
+  const pts  = m.series.map((v, i) => [x(i), y(v)]);
+  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const area = line + ` L${x(m.series.length - 1).toFixed(1)} ${H - PADY} L${PADX} ${H - PADY} Z`;
+  const grid = [0.25, 0.5, 0.75, 1]
+    .map(f => `<line x1="${PADX}" x2="${W - PADX}" y1="${(H - PADY - f * (H - PADY * 2)).toFixed(1)}" y2="${(H - PADY - f * (H - PADY * 2)).toFixed(1)}" stroke="var(--shot-grid)" stroke-width="1"/>`)
+    .join("");
+  const end = pts[pts.length - 1];
+
+  $("shotSvg").innerHTML =
+    `<title id="shotAlt">Gross volume, last 30 days, ending at ${m.mrrTxt}</title>` +
+    `<defs><linearGradient id="ef" x1="0" y1="0" x2="0" y2="1">
+       <stop offset="0%" stop-color="var(--ember)" stop-opacity=".26"/>
+       <stop offset="100%" stop-color="var(--ember)" stop-opacity="0"/>
+     </linearGradient></defs>` +
+    grid +
+    `<path d="${area}" fill="url(#ef)"/>` +
+    `<path d="${line}" fill="none" stroke="var(--ember)" stroke-width="2"
+       stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` +
+    `<circle cx="${end[0].toFixed(1)}" cy="${end[1].toFixed(1)}" r="4.5" fill="var(--ember)"
+       stroke="var(--shot-bg)" stroke-width="2"/>`;
+
+  /* dates that end today, so the screenshot reads as fresh */
+  const d = new Date(), lbl = (back) => {
+    const t = new Date(d.getTime() - back * 864e5);
+    return t.getDate() + " " + MONTHS[t.getMonth()];
+  };
+  $("xA").textContent = lbl(29);
+  $("xB").textContent = lbl(15);
+  $("xC").textContent = lbl(0);
+
+  $("shotUrl").textContent = "dashboard." + saas.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com/revenue";
+  $("shotNum").textContent = m.mrrTxt;
+  $("shotDelta").textContent = "▲ " + m.delta;
+  $("shotCust").textContent = m.customers.toLocaleString();
+  $("shotChurn").textContent = m.churn;
+  $("shotArpu").textContent = fmt(Math.max(1, m.mrr / Math.max(1, m.customers)));
+
+  shotPoints = pts.map((p, i) => ({ x: p[0], y: p[1], v: m.series[i], day: lbl(29 - i) }));
+}
+
+/* hover crosshair — the "screenshot" is suspiciously interactive */
+let shotPoints = [];
+$("shotPlot").addEventListener("pointermove", (e) => {
+  if (!shotPoints.length) return;
+  const box = $("shotSvg").getBoundingClientRect();
+  const rel = ((e.clientX - box.left) / box.width) * 600;
+  let best = shotPoints[0];
+  for (const p of shotPoints) if (Math.abs(p.x - rel) < Math.abs(best.x - rel)) best = p;
+  const tip = $("shotTip");
+  tip.innerHTML = `${best.day} · <b>${fmt(best.v)}</b>`;
+  tip.style.left = (best.x / 600) * box.width + box.left - $("shotPlot").getBoundingClientRect().left + "px";
+  tip.style.top  = (best.y / 190) * box.height + (box.top - $("shotPlot").getBoundingClientRect().top) + "px";
+  tip.classList.add("on");
+});
+$("shotPlot").addEventListener("pointerleave", () => $("shotTip").classList.remove("on"));
+
+/* ── render it into the tray ────────────────────────────── */
+const AV_HUES = ["#2B5F86","#7A4230","#3F5B39","#5A3B6E","#8A6410","#1F5F5B","#7C2F45"];
+let built = 0, raw = "", expanded = false;
+
+function hue(s){ let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return AV_HUES[h % AV_HUES.length]; }
+
+function render(first, replaySeed) {
+  /* a replayed link starts from a clean draw history, otherwise the
+     no-repeat memory would steer the same seed to a different post */
+  if (replaySeed !== undefined) resetMemory();
+  const seed = replaySeed !== undefined ? replaySeed : (Date.now() ^ (rnd() * 4294967296)) >>> 0;
+  seedRng(seed);
+
+  const out = manufacture();
+  raw = out.text;
+  built++;
+
+  /* author */
+  const name = $("fName").value.trim() || rollName();
+  const ini  = name.split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+  $("pName").textContent = name;
+  $("avatar").textContent = ini || "??";
+  $("avatar").style.background = hue(name);
+  $("pHeadline").textContent = pick(HEADLINES);
+  $("pTime").textContent = pick(["12m","41m","2h","3h","5h","9h","1d","1w","2w"]);
+
+  /* body — hashtags get the professional-network blue */
+  const esc = raw.replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c]));
+  $("body").innerHTML = esc.replace(/(#[A-Za-z0-9]+)/g, '<span class="tag">$1</span>');
+
+  expanded = false;
+  $("body").classList.add("clipped");
+  requestAnimationFrame(() => {
+    const b = $("body");
+    const clipped = b.scrollHeight > b.clientHeight + 2;
+    $("moreRow").hidden = !clipped;
+    if (!clipped) b.classList.remove("clipped");
+    $("seemore").textContent = "…see more";
+  });
+
+  /* the screenshot, drawn from the very numbers the post brags about */
+  const showShot = $("tChart").checked;
+  $("shot").hidden = !showShot;
+  if (showShot) drawShot(out.met, ctx.saas);
+
+  /* fake engagement, occasionally and deliberately bleak */
+  const bleak = out.bleak;
+  const likes = bleak ? 1 + R(3) : Math.round((out.psi ** 1.9) / 12 * (0.4 + rnd() * 1.8));
+  $("likes").textContent = likes.toLocaleString();
+  const cm = bleak ? 0 : R(Math.max(2, Math.round(likes / 9)));
+  const rp = bleak ? 0 : R(Math.max(2, Math.round(likes / 22)));
+  $("commentCount").textContent =
+    `${cm.toLocaleString()} comment${cm === 1 ? "" : "s"} · ${rp.toLocaleString()} repost${rp === 1 ? "" : "s"}`;
+
+  /* meters */
+  const chars = raw.length, lines = raw.split("\n").length;
+  $("mChars").textContent = chars.toLocaleString();
+  $("mChars").className = chars > 3000 ? "over" : "";
+  $("mLimit").className  = chars > 3000 ? "over" : "";
+  $("mLines").textContent = lines;
+  $("mCount").textContent = built;
+
+  /* gauge + unit stamp */
+  setPsi(out.psi);
+  $("uNo").textContent  = String(built).padStart(3, "0");
+  $("uPsi").textContent = out.psi;
+  $("uGrade").textContent = LEVELS[out.lvl - 1].name;
+
+  /* log — a replay says so, because the browser can fire hashchange
+     on load and would otherwise stomp the message set by the caller */
+  $("ticker").innerHTML = replaySeed !== undefined
+    ? "<b>Foundry log —</b> unit restored from a share link. Someone did this on purpose and sent it to you."
+    : `<b>Foundry log —</b> ${pick(LOG).replaceAll("{n}", out.psi)}`;
+
+  if (!first) {
+    const p = $("post");
+    p.classList.remove("stamp"); void p.offsetWidth; p.classList.add("stamp");
+  }
+  $("copyBtn").dataset.ok = "0";
+  $("copyBtn").textContent = "Copy the shame";
+  $("linkBtn").dataset.ok = "0";
+  $("linkBtn").textContent = "Copy share link";
+
+  currentSeed = seed;
+  queueUrl();
+}
+
+function setPsi(v) {
+  $("psi").textContent = v;
+  $("needle").style.transform = `rotate(${Math.max(-88, Math.min(88, (v / 140) * 176 - 88))}deg)`;
+  $("psiWord").textContent = (PSI_WORDS.find(([lo, hi]) => v >= lo && v <= hi) || PSI_WORDS[0])[2];
+  $("ledHot").className = "led" + (v > 85 ? " hot" : v > 55 ? " on" : "");
+}
+
+/* ── shareable state ─────────────────────────────────────
+   The hash carries every control plus the seed that produced
+   the post on screen, so a link reopens that exact unit. */
+const TOGGLES = ["tChart","tMoney","tBroetry","tEmoji","tCry","tHumble","tTags","tKid","tUber"];
+
+function encodeState(seed) {
+  const p = new URLSearchParams();
+  p.set("s", $("fSaas").value.trim());
+  if ($("fThing").value.trim()) p.set("t", $("fThing").value.trim().slice(0, 240));
+  if ($("fName").value.trim())  p.set("n", $("fName").value.trim().slice(0, 80));
+  p.set("d", $("dial").value);
+  p.set("f", TOGGLES.map(id => ($(id).checked ? "1" : "0")).join(""));
+  p.set("k", (seed >>> 0).toString(36));
+  return p.toString();
+}
+
+/* Returns the seed to replay, or null when there's nothing to restore. */
+function applyState(hash) {
+  const p = new URLSearchParams((hash || "").replace(/^#/, ""));
+  if (!p.has("k")) return null;
+
+  if (p.has("s")) $("fSaas").value  = p.get("s").slice(0, 60);
+  $("fThing").value = (p.get("t") || "").slice(0, 240);
+  $("fName").value  = (p.get("n") || "").slice(0, 80);
+
+  const d = parseInt(p.get("d"), 10);
+  if (d >= 1 && d <= 5) {
+    $("dial").value = d;
+    $("dialName").textContent = LEVELS[d - 1].name;
+  }
+  const f = p.get("f") || "";
+  TOGGLES.forEach((id, i) => { if (f[i] === "0" || f[i] === "1") $(id).checked = f[i] === "1"; });
+
+  const k = parseInt(p.get("k"), 36);
+  return Number.isFinite(k) ? k : null;
+}
+
+/* Browsers throttle rapid history.replaceState calls, so hammering the
+   lever could leave a stale link behind. Coalesce the writes, and flush
+   synchronously whenever someone actually asks for the URL. */
+let currentSeed = 0, urlTimer = 0;
+function syncUrl() {
+  clearTimeout(urlTimer); urlTimer = 0;
+  try { history.replaceState(null, "", "#" + encodeState(currentSeed)); } catch (_) {}
+}
+function queueUrl() {
+  clearTimeout(urlTimer);
+  urlTimer = setTimeout(syncUrl, 220);
+}
+
+/* ── wiring ─────────────────────────────────────────────── */
+$("dial").addEventListener("input", () => {
+  $("dialName").textContent = LEVELS[$("dial").value - 1].name;
+});
+$("dial").addEventListener("change", () => render());
+
+document.querySelectorAll(".sw input").forEach(el =>
+  el.addEventListener("change", () => render()));
+
+$("pull").addEventListener("click", () => render());
+$("againBtn").addEventListener("click", () => render());
+
+$("rollSaas").addEventListener("click",  () => { $("fSaas").value  = rollSaas();     render(); });
+$("rollThing").addEventListener("click", () => { $("fThing").value = pick(THINGS);   render(); });
+$("rollName").addEventListener("click",  () => { $("fName").value  = rollName();     render(); });
+
+$("maxOut").addEventListener("click", () => {
+  $("dial").value = 5;
+  $("dialName").textContent = LEVELS[4].name;
+  document.querySelectorAll(".sw input").forEach(el => el.checked = true);
+  render();
+});
+$("reset").addEventListener("click", () => {
+  $("dial").value = 3;
+  $("dialName").textContent = LEVELS[2].name;
+  ["tBroetry","tEmoji","tCry","tHumble","tTags","tMoney","tChart"].forEach(id => $(id).checked = true);
+  ["tKid","tUber"].forEach(id => $(id).checked = false);
+  $("fSaas").value = "Zaply"; $("fThing").value = ""; $("fName").value = "";
+  render();
+});
+
+$("seemore").addEventListener("click", () => {
+  expanded = !expanded;
+  $("body").classList.toggle("clipped", !expanded);
+  $("seemore").textContent = expanded ? "…see less" : "…see more";
+});
+
+/* copy, with a fallback for sandboxes that forbid the clipboard */
+async function copyText(text, btn, label, good, bad) {
+  const done = (msg, ok) => {
+    btn.textContent = msg; btn.dataset.ok = ok ? "1" : "0";
+    setTimeout(() => { btn.textContent = label; btn.dataset.ok = "0"; }, 2400);
+  };
+  try {
+    await navigator.clipboard.writeText(text);
+    return done(good, true);
+  } catch (_) { /* fall through */ }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return done(ok ? good : bad, ok);
+  } catch (_) {
+    done(bad, false);
+  }
+}
+
+$("copyBtn").addEventListener("click", () =>
+  copyText(raw, $("copyBtn"), "Copy the shame", "Copied. Godspeed.", "Blocked — select it by hand"));
+
+/* When the page is embedded, our own href is the frame's URL, which is
+   not what the reader would paste. Prefer the address-bar URL when the
+   parent lets us read it; fall back to ours when it doesn't. */
+function shareUrl() {
+  syncUrl();                       /* flush any pending write first */
+  try {
+    if (window.top !== window.self) {
+      const top = new URL(window.top.location.href);
+      top.hash = location.hash;
+      return top.toString();
+    }
+  } catch (_) { /* cross-origin parent — our own URL is the best we have */ }
+  return location.href;
+}
+
+$("linkBtn").addEventListener("click", () =>
+  copyText(shareUrl(), $("linkBtn"), "Copy share link",
+           "Link copied — this exact post", "Blocked — copy from the address bar"));
+
+$("postBtn").addEventListener("click", () => {
+  const [t, b, f] = pick(MODALS);
+  $("moTitle").textContent = t; $("moBody").textContent = b; $("moFine").textContent = f;
+  $("modal").showModal();
+});
+$("moClose").addEventListener("click", () => $("modal").close());
+
+/* boot: replay a shared link if we were handed one, else press a
+   first unit as a courtesy */
+const shared = applyState(location.hash);
+if (shared !== null) {
+  render(true, shared);
+} else {
+  render(true);
+  $("ticker").innerHTML =
+    "<b>Foundry log —</b> boiler warm. First unit pressed as a courtesy. Pull the lever for another.";
+}
+
+/* back/forward through shared links */
+addEventListener("hashchange", () => {
+  const k = applyState(location.hash);
+  if (k !== null) render(false, k);
+});
+</script>
