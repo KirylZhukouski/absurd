@@ -604,6 +604,12 @@ input[type=range]::-moz-range-thumb{
 .tool.primary:hover{filter:brightness(1.1);border-color:var(--ember);}
 .tool[data-ok="1"]{border-color:var(--ember);color:var(--ember-text);}
 
+.linkout{
+  width:100%;background:var(--card);color:var(--ink);
+  border:1px solid var(--ember);border-radius:var(--r-pill);
+  padding:11px 18px;font-family:var(--f-mono);font-size:11.5px;
+  letter-spacing:-.022em;
+}
 .ticker{
   font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
   color:var(--ink-2);border-top:1px solid var(--hairline);padding-top:14px;line-height:1.65;
@@ -833,9 +839,13 @@ dialog::backdrop{background:rgba(8,8,8,.8);}
     <div class="tools">
       <button class="tool primary" id="copyBtn">Copy the shame</button>
       <button class="tool" id="againBtn">Same inputs, new post</button>
+      <button class="tool" id="pngBtn">Save chart as PNG</button>
       <button class="tool" id="linkBtn">Copy share link</button>
       <button class="tool" id="postBtn">Post it for real</button>
     </div>
+
+    <input class="linkout" id="linkOut" type="text" readonly hidden
+           aria-label="Share link, ready to copy">
 
     <p class="ticker" id="ticker">
       <b>Foundry log —</b> boiler cold. Feed the machine a SaaS name and pull the lever.
@@ -1687,6 +1697,127 @@ function drawShot(m, saas) {
   $("shotArpu").textContent = fmt(Math.max(1, m.mrr / Math.max(1, m.customers)));
 
   shotPoints = pts.map((p, i) => ({ x: p[0], y: p[1], v: m.series[i], day: lbl(29 - i) }));
+  lastMet = m;
+  lastDays = [lbl(29), lbl(15), lbl(0)];
+}
+
+/* ── export the screenshot as a real PNG ──────────────────
+   Drawn straight onto a canvas rather than rasterising the DOM:
+   no foreignObject, no tainted canvas, and it renders at any
+   scale. Colours are read from the live tokens, so the export
+   matches whichever theme is on screen. */
+let lastMet = null, lastDays = ["", "", ""];
+
+async function exportChart(scale = 2) {
+  if (!lastMet) return null;
+  if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (_) {} }
+
+  const cs = getComputedStyle(document.documentElement);
+  const v  = (n) => cs.getPropertyValue(n).trim();
+  const W = 1000, H = 600;
+
+  const cv = document.createElement("canvas");
+  cv.width = W * scale; cv.height = H * scale;
+  const g = cv.getContext("2d");
+  g.scale(scale, scale);
+  g.textBaseline = "alphabetic";
+
+  const MONO = '"IBM Plex Mono", ui-monospace, monospace';
+  const rr = (x, y, w, h, r) => {
+    g.beginPath();
+    if (g.roundRect) g.roundRect(x, y, w, h, r);
+    else g.rect(x, y, w, h);
+  };
+
+  /* ground + chrome bar */
+  g.fillStyle = v("--shot-bg"); g.fillRect(0, 0, W, H);
+  g.fillStyle = v("--shot-line"); g.fillRect(0, 55, W, 1);
+  [40, 62, 84].forEach(cx => {
+    g.beginPath(); g.arc(cx, 28, 5, 0, 7); g.fillStyle = v("--shot-line"); g.fill();
+  });
+  g.font = `400 15px ${MONO}`; g.fillStyle = v("--ink-2");
+  g.fillText($("shotUrl").textContent, 108, 33);
+
+  const PAD = 40;
+  /* label + the number */
+  g.font = `400 15px ${MONO}`; g.fillStyle = v("--ink-2");
+  g.fillText("GROSS VOLUME · LAST 30 DAYS", PAD, 104);
+  g.font = `400 92px "Anton", sans-serif`; g.fillStyle = v("--ink");
+  g.fillText(lastMet.mrrTxt, PAD - 2, 186);
+
+  /* delta pill — arrow glyph and signed number, never colour alone */
+  const dTxt = "▲ " + lastMet.delta, dSub = "vs previous period";
+  g.font = `400 16px ${MONO}`;
+  const wMain = g.measureText(dTxt).width, wSub = g.measureText(dSub).width;
+  const pw = 22 + 9 + 9 + wMain + 10 + wSub + 20, ph = 42, py = 210;
+  rr(PAD, py, pw, ph, ph / 2);
+  g.fillStyle = v("--delta-bg"); g.fill();
+  const dl = v("--delta-line");
+  if (dl && dl !== "transparent") { g.strokeStyle = dl; g.lineWidth = 1; g.stroke(); }
+  g.beginPath(); g.arc(PAD + 20, py + ph / 2, 4.5, 0, 7);
+  g.fillStyle = v("--delta-dot"); g.fill();
+  g.fillStyle = v("--delta-ink");
+  g.fillText(dTxt, PAD + 34, py + 27);
+  g.globalAlpha = .7; g.fillText(dSub, PAD + 34 + wMain + 10, py + 27); g.globalAlpha = 1;
+
+  /* plot */
+  const PX = PAD, PW = W - PAD * 2, PY = 296, PH = 176;
+  const ser = lastMet.series, max = Math.max(...ser) * 1.12 || 1;
+  const sx = i => PX + (i / (ser.length - 1)) * PW;
+  const sy = q => PY + PH - (q / max) * PH;
+
+  g.strokeStyle = v("--shot-grid"); g.lineWidth = 1;
+  [0, .25, .5, .75, 1].forEach(f => {
+    const y = PY + PH - f * PH;
+    g.beginPath(); g.moveTo(PX, y + .5); g.lineTo(PX + PW, y + .5); g.stroke();
+  });
+
+  const line = new Path2D();
+  ser.forEach((q, i) => i ? line.lineTo(sx(i), sy(q)) : line.moveTo(sx(i), sy(q)));
+  const fillP = new Path2D(line);
+  fillP.lineTo(sx(ser.length - 1), PY + PH); fillP.lineTo(PX, PY + PH); fillP.closePath();
+
+  const ember = v("--ember");
+  const grad = g.createLinearGradient(0, PY, 0, PY + PH);
+  grad.addColorStop(0, ember + "4a"); grad.addColorStop(1, ember + "00");
+  g.fillStyle = grad; g.fill(fillP);
+  g.strokeStyle = ember; g.lineWidth = 3;
+  g.lineJoin = "round"; g.lineCap = "round"; g.stroke(line);
+  g.beginPath(); g.arc(sx(ser.length - 1), sy(ser[ser.length - 1]), 7, 0, 7);
+  g.fillStyle = ember; g.fill();
+  g.strokeStyle = v("--shot-bg"); g.lineWidth = 3; g.stroke();
+
+  /* x axis */
+  g.font = `400 14px ${MONO}`; g.fillStyle = v("--ink-2");
+  g.fillText(lastDays[0], PX, PY + PH + 30);
+  g.textAlign = "center"; g.fillText(lastDays[1], PX + PW / 2, PY + PH + 30);
+  g.textAlign = "right";  g.fillText(lastDays[2], PX + PW, PY + PH + 30);
+  g.textAlign = "left";
+
+  /* footer stats, dotted separators */
+  const fy = 528;
+  g.strokeStyle = v("--shot-line"); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(0, fy + .5); g.lineTo(W, fy + .5); g.stroke();
+
+  const arpu = fmt(Math.max(1, lastMet.mrr / Math.max(1, lastMet.customers)));
+  const cells = [["CUSTOMERS", lastMet.customers.toLocaleString()],
+                 ["CHURN", lastMet.churn.toUpperCase()],
+                 ["ARPU", arpu]];
+  let cx2 = PAD;
+  cells.forEach(([k, val], i) => {
+    g.font = `400 15px ${MONO}`;
+    g.fillStyle = v("--ink-2"); g.fillText(k, cx2, fy + 40);
+    const kw = g.measureText(k + " ").width;
+    g.fillStyle = v("--ink");   g.fillText(val, cx2 + kw, fy + 40);
+    cx2 += kw + g.measureText(val).width + 34;
+    if (i < cells.length - 1) {
+      g.strokeStyle = v("--shot-line"); g.setLineDash([2, 4]);
+      g.beginPath(); g.moveTo(cx2 - 18, fy + 24); g.lineTo(cx2 - 18, fy + 46); g.stroke();
+      g.setLineDash([]);
+    }
+  });
+
+  return new Promise(res => cv.toBlob(res, "image/png"));
 }
 
 /* hover crosshair — the "screenshot" is suspiciously interactive */
@@ -1748,6 +1879,7 @@ function render(first, replaySeed) {
   /* the screenshot, drawn from the very numbers the post brags about */
   const showShot = $("tChart").checked;
   $("shot").hidden = !showShot;
+  $("pngBtn").hidden = !showShot;
   if (showShot) drawShot(out.met, ctx.saas);
 
   /* fake engagement, occasionally and deliberately bleak */
@@ -1787,6 +1919,9 @@ function render(first, replaySeed) {
   $("copyBtn").textContent = "Copy the shame";
   $("linkBtn").dataset.ok = "0";
   $("linkBtn").textContent = "Copy share link";
+  $("pngBtn").dataset.ok = "0";
+  $("pngBtn").textContent = "Save chart as PNG";
+  $("linkOut").hidden = true;
 
   currentSeed = seed;
   queueUrl();
@@ -1886,31 +2021,51 @@ $("seemore").addEventListener("click", () => {
   $("seemore").textContent = expanded ? "…see less" : "…see more";
 });
 
-/* copy, with a fallback for sandboxes that forbid the clipboard */
-async function copyText(text, btn, label, good, bad) {
+/* Copying has to work even where the Clipboard API is refused — some
+   embeds withhold it, and it needs a trusted gesture. Three tiers: the
+   async API, execCommand, and finally selecting the text for the reader
+   so the keystroke is all that's left to do. */
+const COMBO = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "\u2318C" : "Ctrl+C";
+
+function selectNode(el) {
+  const r = document.createRange();
+  r.selectNodeContents(el);
+  const sel = getSelection();
+  sel.removeAllRanges(); sel.addRange(r);
+  return String(sel).length > 0;
+}
+
+async function copyText(text, btn, label, good, selectEl) {
   const done = (msg, ok) => {
     btn.textContent = msg; btn.dataset.ok = ok ? "1" : "0";
-    setTimeout(() => { btn.textContent = label; btn.dataset.ok = "0"; }, 2400);
+    setTimeout(() => { btn.textContent = label; btn.dataset.ok = "0"; }, 3000);
   };
   try {
     await navigator.clipboard.writeText(text);
     return done(good, true);
-  } catch (_) { /* fall through */ }
+  } catch (_) { /* not permitted here — keep going */ }
+
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.cssText = "position:fixed;left:8px;bottom:8px;width:1px;height:1px;opacity:.01;";
+  document.body.appendChild(ta);
+  ta.select(); ta.setSelectionRange(0, text.length);
   try {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
-    document.body.appendChild(ta); ta.select();
-    const ok = document.execCommand("copy");
-    ta.remove();
-    return done(ok ? good : bad, ok);
-  } catch (_) {
-    done(bad, false);
-  }
+    if (document.execCommand("copy")) { ta.remove(); return done(good, true); }
+  } catch (_) { /* fall through to hand selection */ }
+  ta.remove();
+
+  /* last resort: put it under the cursor so one keystroke finishes the job */
+  if (selectEl && selectNode(selectEl)) return done("Selected — press " + COMBO, true);
+  const box = $("linkOut");
+  box.value = text; box.hidden = false;
+  box.focus(); box.select(); box.setSelectionRange(0, text.length);
+  done("Press " + COMBO + " to copy", true);
 }
 
 $("copyBtn").addEventListener("click", () =>
-  copyText(raw, $("copyBtn"), "Copy the shame", "Copied. Godspeed.", "Blocked — select it by hand"));
+  copyText(raw, $("copyBtn"), "Copy the shame", "Copied. Godspeed.", $("body")));
 
 /* When the page is embedded, our own href is the frame's URL, which is
    not what the reader would paste. Prefer the address-bar URL when the
@@ -1928,8 +2083,43 @@ function shareUrl() {
 }
 
 $("linkBtn").addEventListener("click", () =>
-  copyText(shareUrl(), $("linkBtn"), "Copy share link",
-           "Link copied — this exact post", "Blocked — copy from the address bar"));
+  copyText(shareUrl(), $("linkBtn"), "Copy share link", "Link copied — this exact post"));
+
+/* Save the chart. Some embeds block page-initiated downloads outright,
+   so fall back to putting the PNG on the clipboard, then to opening it
+   in a tab — and say which one actually happened. */
+$("pngBtn").addEventListener("click", async () => {
+  const btn = $("pngBtn"), label = "Save chart as PNG";
+  const done = (msg, ok) => {
+    btn.textContent = msg; btn.dataset.ok = ok ? "1" : "0";
+    setTimeout(() => { btn.textContent = label; btn.dataset.ok = "0"; }, 2600);
+  };
+  btn.textContent = "Rendering…";
+  let blob;
+  try { blob = await exportChart(2); } catch (_) { return done("Render failed", false); }
+  if (!blob) return done("Turn the screenshot on", false);
+
+  const file = "broetry-foundry-mrr-" +
+    ((lastMet.mrrTxt || "chart").replace(/^\$/, "").replace(/[^\w.]+/g, "") || "chart") + ".png";
+  try {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = file; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    return done("Saved " + file.slice(0, 22) + "…", true);
+  } catch (_) { /* embedded and blocked — try the clipboard */ }
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return done("Image copied to clipboard", true);
+  } catch (_) { /* last resort: hand them a tab to save from */ }
+  try {
+    window.open(URL.createObjectURL(blob), "_blank", "noopener");
+    return done("Opened in a new tab", true);
+  } catch (_) {
+    done("Blocked — screenshot it instead", false);
+  }
+});
 
 $("postBtn").addEventListener("click", () => {
   const [t, b, f] = pick(MODALS);
