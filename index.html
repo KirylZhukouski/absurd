@@ -130,7 +130,7 @@ button,input,select,textarea{font:inherit;color:inherit;}
   border-bottom:1px solid var(--console-line);
 }
 .hazard{
-  height:56px;
+  height:30px;
   background-image:
     radial-gradient(rgba(252,80,0,.85) 1.6px, transparent 1.7px),
     linear-gradient(100deg, var(--violet) 0%, #8a3a7a 42%, var(--ember) 100%);
@@ -140,24 +140,25 @@ button,input,select,textarea{font:inherit;color:inherit;}
 }
 .masthead-in{
   max-width:1280px;margin:0 auto;
-  padding:20px 24px 26px;
-  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  padding:14px 24px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
 }
 .wordmark{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0;}
 .wordmark h1{
   font-family:var(--f-display);
   font-weight:400;
-  font-size:clamp(40px,6.4vw,72px);
-  line-height:.94;
-  letter-spacing:.02em;      /* Caldera: positive tracking, never negative */
+  font-size:clamp(24px,2.6vw,32px);
+  line-height:1;
+  letter-spacing:.03em;      /* Caldera: positive tracking, never negative */
   margin:0;
   text-transform:uppercase;
   color:var(--console-ink);
+  white-space:nowrap;
 }
 .wordmark h1 em{font-style:normal;color:var(--ember);}
 .plate{
   font-family:var(--f-mono);font-weight:400;
-  font-size:11px;letter-spacing:-.022em;text-transform:uppercase;
+  font-size:10px;letter-spacing:-.022em;text-transform:uppercase;
   color:var(--console-ink-2);
   border:1px solid var(--console-line);
   border-radius:var(--r-pill);
@@ -165,9 +166,9 @@ button,input,select,textarea{font:inherit;color:inherit;}
 }
 .tagline{
   font-family:var(--f-mono);font-weight:400;
-  font-size:12px;line-height:1.6;letter-spacing:-.022em;
+  font-size:11px;line-height:1.55;letter-spacing:-.022em;
   color:var(--console-ink-2);
-  max-width:42ch;text-align:right;margin:0;
+  max-width:70ch;text-align:right;margin:0;
 }
 @media (max-width:760px){ .tagline{text-align:left;} }
 </style>
@@ -182,14 +183,26 @@ button,input,select,textarea{font:inherit;color:inherit;}
 @media (max-width:1000px){ .floor{grid-template-columns:1fr;padding:16px;gap:16px;} }
 
 /* ── CONTROL CONSOLE — Hyperstudio, in both themes ──────── */
+/* The console is often taller than a laptop viewport, which used to put
+   the lever below the fold with no way to reach it. It is now a column:
+   the controls scroll inside, the lever is pinned to the bottom. */
 .console{
   background:var(--console);
   border:1px solid var(--console-line);
   border-radius:var(--r-card);
   color:var(--console-ink);
   position:sticky;top:24px;overflow:hidden;
+  display:flex;flex-direction:column;
+  max-height:calc(100vh - var(--mast, 130px) - 48px);
 }
-@media (max-width:1000px){ .console{position:static;} }
+.console-head{flex:none;}
+.console-foot{
+  flex:none;
+  display:flex;flex-direction:column;gap:8px;
+  padding:14px 18px 18px;
+  background:var(--console);
+  border-top:1px solid var(--console-line);
+}
 .console-head{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:13px 18px;border-bottom:1px solid var(--console-line);
@@ -204,7 +217,25 @@ button,input,select,textarea{font:inherit;color:inherit;}
 .led.on{background:var(--pulse);}
 .led.hot{background:var(--ember);}
 
-.rack{padding:20px 18px 22px;display:flex;flex-direction:column;gap:20px;}
+.rack{
+  padding:20px 18px 22px;display:flex;flex-direction:column;gap:20px;
+  overflow-y:auto;flex:1;min-height:0;
+  scrollbar-width:thin;scrollbar-color:var(--console-line-2) transparent;
+}
+.rack::-webkit-scrollbar{width:8px;}
+.rack::-webkit-scrollbar-thumb{background:var(--console-line-2);border-radius:99px;}
+.rack::-webkit-scrollbar-track{background:transparent;}
+
+@media (max-width:1000px){
+  /* the page scrolls rather than the console, so pin the foot to the
+     viewport instead — overflow:hidden would kill the sticky */
+  .console{position:static;max-height:none;overflow:visible;}
+  .rack{overflow:visible;}
+  .console-foot{
+    position:sticky;bottom:0;z-index:5;
+    margin:0 -1px -1px;border-radius:0 0 var(--r-card) var(--r-card);
+  }
+}
 .bay{display:flex;flex-direction:column;gap:9px;}
 .bay-label{
   font-family:var(--f-mono);font-size:11px;letter-spacing:-.022em;
@@ -315,15 +346,15 @@ input[type=range]::-moz-range-thumb{
   background:var(--ember);color:var(--ember-on);
   border-radius:var(--r-pill);
   font-family:var(--f-display);font-weight:400;
-  font-size:32px;line-height:1;text-transform:uppercase;letter-spacing:.02em;
-  padding:20px 16px 17px;
+  font-size:27px;line-height:1;text-transform:uppercase;letter-spacing:.02em;
+  padding:15px 16px 13px;
   transition:filter .12s ease,transform .08s ease;
 }
 .lever:hover{filter:brightness(1.1);}
 .lever:active{transform:translateY(1px);}
 .lever small{
   display:block;font-family:var(--f-mono);font-size:10px;font-weight:400;
-  letter-spacing:-.022em;margin-top:7px;opacity:.7;text-transform:uppercase;
+  letter-spacing:-.022em;margin-top:5px;opacity:.7;text-transform:uppercase;
 }
 .mini-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 /* Hyperstudio ghost outline button */
@@ -655,7 +686,7 @@ dialog::backdrop{background:rgba(8,8,8,.8);}
   <div class="hazard"></div>
   <div class="masthead-in">
     <div class="wordmark">
-      <h1>Broetry<br><em>Foundry</em></h1>
+      <h1>Broetry <em>Foundry</em></h1>
       <span class="plate">Unit 04 · Thought-Leadership Extrusion</span>
     </div>
     <p class="tagline">
@@ -742,11 +773,13 @@ dialog::backdrop{background:rgba(8,8,8,.8);}
         </div>
       </div>
 
+    </div>
+
+    <div class="console-foot">
       <button class="lever" id="pull">
         Pull the lever
         <small>Manufacture one (1) post</small>
       </button>
-
       <div class="mini-row">
         <button class="mini" id="maxOut">Max everything</button>
         <button class="mini" id="reset">Factory reset</button>
@@ -2127,6 +2160,21 @@ $("postBtn").addEventListener("click", () => {
   $("modal").showModal();
 });
 $("moClose").addEventListener("click", () => $("modal").close());
+
+/* Measure the masthead so the console can size itself to the space that
+   actually remains, keeping the lever on screen even before it sticks. */
+const mastEl = document.querySelector(".masthead");
+const fitConsole = () => document.documentElement.style
+  .setProperty("--mast", Math.round(mastEl.getBoundingClientRect().height) + "px");
+fitConsole();
+/* Observe the element (catches font-load reflow, not just resize) and
+   keep the window listener as well — one of the two always lands. If the
+   value ever goes stale the console is merely the wrong height by the
+   masthead's delta; it never breaks the layout. */
+if (window.ResizeObserver) new ResizeObserver(fitConsole).observe(mastEl);
+addEventListener("resize", fitConsole, { passive: true });
+addEventListener("orientationchange", fitConsole);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitConsole);
 
 /* boot: replay a shared link if we were handed one, else press a
    first unit as a courtesy */
